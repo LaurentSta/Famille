@@ -22,4 +22,15 @@ class Ingredient extends Model
     {
         return $this->hasMany(IngredientStock::class);
     }
+
+    public function getEmojiAttribute(): string
+    {
+        $map = config('emoji.ingredients');
+
+        if (isset($map[$this->name])) {
+            return $map[$this->name];
+        }
+
+        return config("emoji.ingredient_category_default.{$this->category}", config('emoji.ingredient_default'));
+    }
 }

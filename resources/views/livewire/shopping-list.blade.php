@@ -19,7 +19,7 @@
                                 wire:click="{{ $inList ? 'removeIngredient' : 'addIngredient' }}({{ $ingredient->id }})"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-pointer border-l-4 {{ $inList ? 'bg-brand-orange text-white border-brand-orange' : 'border-transparent hover:bg-brand-mustard/10 hover:border-brand-mustard/50' }}"
                             >
-                                {{ $ingredient->name }}
+                                {{ $ingredient->emoji }} {{ $ingredient->name }}
                             </li>
                         @endforeach
                         @if ($catalog->isEmpty())
@@ -100,7 +100,7 @@
                                             >
                                         </td>
                                         <td class="px-2 py-2 {{ $ingredient->in_stock ? 'line-through text-neutral-400' : '' }}">
-                                            {{ $ingredient->name }}
+                                            {{ $ingredient->emoji }} {{ $ingredient->name }}
                                         </td>
                                         <td class="pl-2 pr-4 py-2 w-10 text-right">
                                             <button

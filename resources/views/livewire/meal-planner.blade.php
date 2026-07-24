@@ -25,11 +25,11 @@
                             <li
                                 draggable="true"
                                 x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'plat', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ $dish->emoji }} {{ addslashes($dish->name) }}', course: 'plat', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
                                 :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-mustard text-white border-brand-mustard' : 'border-transparent hover:bg-brand-mustard/10 hover:border-brand-mustard/50'"
                             >
-                                {{ $dish->name }}
+                                {{ $dish->emoji }} {{ $dish->name }}
                             </li>
                         @endforeach
                         @if ($savoryDishes->isEmpty())
@@ -43,11 +43,11 @@
                             <li
                                 draggable="true"
                                 x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'dessert', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ $dish->emoji }} {{ addslashes($dish->name) }}', course: 'dessert', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
                                 :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'border-transparent hover:bg-brand-red/10 hover:border-brand-red/50'"
                             >
-                                {{ $dish->name }}
+                                {{ $dish->emoji }} {{ $dish->name }}
                             </li>
                         @endforeach
                         @if ($dessertDishes->isEmpty())
@@ -108,7 +108,7 @@
                                                 class="group cursor-pointer h-11 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
-                                                    <span>{{ $meal->dish->name }}</span>
+                                                    <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
@@ -135,7 +135,7 @@
                                                 class="group cursor-pointer h-11 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
-                                                    <span>{{ $meal->dish->name }}</span>
+                                                    <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"

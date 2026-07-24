@@ -30,4 +30,9 @@ class Dish extends Model
     {
         return $this->belongsToMany(Ingredient::class);
     }
+
+    public function getEmojiAttribute(): string
+    {
+        return config("emoji.dish_types.{$this->type}", config('emoji.dish_type_default'));
+    }
 }
