@@ -1,18 +1,79 @@
-<div class="pb-24 min-h-screen flex items-center justify-center px-6">
-    <div class="max-w-md w-full text-center">
-        @if ($configured)
-            <p class="text-neutral-500">L'assistant arrive bientôt.</p>
-        @else
-            <div class="bg-white rounded-2xl shadow-sm p-8 border-l-4 border-brand-orange text-left">
+<div class="min-h-screen">
+    @if (! $configured)
+        <div class="min-h-screen flex items-center justify-center px-6">
+            <div class="bg-white rounded-2xl shadow-sm p-8 border-l-4 border-brand-orange text-left max-w-md">
                 <h1 class="text-lg font-semibold mb-2">Assistant cuisine (IA)</h1>
-                <p class="text-sm text-neutral-500">
-                    Cet espace permettra bientôt de discuter avec une IA (DeepSeek) pour créer de nouveaux plats,
-                    avec leurs ingrédients ajoutés automatiquement à ta banque de plats et à tes courses.
-                </p>
-                <p class="text-sm text-neutral-400 mt-4">
-                    En attente de la clé API DeepSeek pour l'activer.
-                </p>
+                <p class="text-sm text-neutral-400">En attente de la clé API DeepSeek pour l'activer.</p>
             </div>
-        @endif
-    </div>
+        </div>
+    @else
+        <div class="px-4 pt-6 pb-40 max-w-2xl w-full mx-auto space-y-4">
+            @if (empty($messages))
+                <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-brand-orange">
+                    <h1 class="text-lg font-semibold mb-1">Assistant cuisine</h1>
+                    <p class="text-sm text-neutral-500">
+                        Demande-moi une idée de plat, une recette, ou parle-moi d'un ingrédient — je peux ajouter
+                        directement un plat à ta banque si tu le souhaites.
+                    </p>
+                </div>
+            @endif
+
+            @foreach ($messages as $index => $message)
+                <div class="flex {{ $message['role'] === 'user' ? 'justify-end' : 'justify-start' }}">
+                    <div class="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm {{ $message['role'] === 'user' ? 'bg-brand-orange text-white' : 'bg-white shadow-sm' }}">
+                        <p class="whitespace-pre-line">{{ $message['content'] }}</p>
+
+                        @if ($message['dish'] ?? null)
+                            <div class="mt-3 pt-3 border-t {{ $message['role'] === 'user' ? 'border-white/30' : 'border-neutral-100' }}">
+                                <p class="font-semibold text-brand-brick">
+                                    {{ config('emoji.dish_types.'.$message['dish']['type'], config('emoji.dish_type_default')) }}
+                                    {{ $message['dish']['name'] }}
+                                </p>
+                                <ul class="list-disc list-inside text-xs text-neutral-500 mt-1">
+                                    @foreach ($message['dish']['ingredients'] as $ingredient)
+                                        <li>{{ is_array($ingredient) ? $ingredient['name'] : $ingredient }}</li>
+                                    @endforeach
+                                </ul>
+
+                                @if ($message['added'])
+                                    <p class="mt-2 text-xs text-brand-mustard font-medium">✓ Ajouté à tes plats</p>
+                                @else
+                                    <button
+                                        type="button"
+                                        wire:click="addDish({{ $index }})"
+                                        class="cursor-pointer mt-2 text-xs bg-brand-mustard text-white font-medium rounded-full px-3 py-1.5"
+                                    >
+                                        Ajouter à mes plats
+                                    </button>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+
+            <div wire:key="scroll-{{ count($messages) }}" x-data x-init="$el.scrollIntoView({ block: 'end' })"></div>
+        </div>
+
+        <form wire:submit.prevent="send" class="fixed bottom-16 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 z-10">
+            <div class="max-w-2xl mx-auto flex gap-2">
+                <input
+                    type="text"
+                    wire:model="input"
+                    placeholder="Écris ton message…"
+                    class="flex-1 rounded-full border-2 border-brand-orange/30 text-sm px-4 py-2.5 focus:border-brand-orange focus:ring-brand-orange"
+                    wire:loading.attr="disabled"
+                    autocomplete="off"
+                >
+                <button
+                    type="submit"
+                    class="cursor-pointer shrink-0 bg-brand-orange text-white rounded-full px-5 py-2.5 text-sm font-medium"
+                    wire:loading.attr="disabled"
+                >
+                    <span wire:loading.remove>Envoyer</span>
+                    <span wire:loading>…</span>
+                </button>
+            </div>
+        </form>
+    @endif
 </div>
