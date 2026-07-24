@@ -119,7 +119,7 @@
                                                         </svg>
                                                     </button>
                                                 @else
-                                                    <span class="text-brand-mustard/50">+</span>
+                                                    <span class="text-brand-mustard/50 text-2xl leading-none font-light">+</span>
                                                 @endif
                                             </div>
                                         @endfor
@@ -146,7 +146,7 @@
                                                         </svg>
                                                     </button>
                                                 @else
-                                                    <span class="text-brand-red/40">+</span>
+                                                    <span class="text-brand-red/40 text-2xl leading-none font-light">+</span>
                                                 @endif
                                             </div>
                                         @endfor
