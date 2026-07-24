@@ -41,4 +41,11 @@ class User extends Authenticatable
     {
         return $this->last_seen_at !== null && $this->last_seen_at->gt(now()->subMinutes(5));
     }
+
+    public function getAvatarAttribute(): string
+    {
+        $avatars = config('emoji.family_avatars');
+
+        return $avatars[$this->id % count($avatars)];
+    }
 }

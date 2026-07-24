@@ -8,8 +8,11 @@
         <div class="bg-white rounded-xl shadow-sm p-4 text-left">
             <ul class="space-y-2">
                 @foreach ($members as $member)
-                    <li class="flex items-center gap-2 text-sm">
-                        <span class="size-2 rounded-full {{ $member->isOnline() ? 'bg-green-500' : 'bg-neutral-300' }}"></span>
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="relative inline-flex shrink-0">
+                            <span class="text-2xl leading-none {{ $member->isOnline() ? '' : 'grayscale opacity-50' }}">{{ $member->avatar }}</span>
+                            <span class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-white {{ $member->isOnline() ? 'bg-green-500' : 'bg-neutral-300' }}"></span>
+                        </span>
                         <span class="{{ $member->id === auth()->id() ? 'font-medium' : '' }}">{{ $member->name }}</span>
                         <span class="text-xs text-neutral-400 ml-auto">
                             @if ($member->isOnline())
