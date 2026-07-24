@@ -1,5 +1,5 @@
 <div class="pb-24" x-data="{ selected: null }">
-    <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6">
+    <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6">
         {{-- Barre latérale --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0">
             <div class="bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10">
@@ -85,16 +85,16 @@
 
             <div class="space-y-2">
                 @foreach ($days as $day)
-                    <div class="bg-white rounded-xl shadow-sm p-2.5">
-                        <h2 class="font-medium mb-1.5 text-sm capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
+                    <div class="bg-white rounded-xl shadow-sm p-3">
+                        <h2 class="font-medium mb-2 text-lg capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
 
-                        <div class="space-y-1.5">
+                        <div class="space-y-2">
                             @foreach ([
                                 'midi' => ['label' => 'Midi', 'panel' => 'bg-brand-terracotta/15', 'text' => 'text-brand-brick'],
                                 'soir' => ['label' => 'Soir', 'panel' => 'bg-brand-brick/15', 'text' => 'text-brand-red'],
                             ] as $slotKey => $slotMeta)
-                                <div class="rounded-lg {{ $slotMeta['panel'] }} p-1.5">
-                                    <span class="text-xs font-medium {{ $slotMeta['text'] }}">{{ $slotMeta['label'] }}</span>
+                                <div class="rounded-lg {{ $slotMeta['panel'] }} p-2">
+                                    <span class="text-sm font-medium {{ $slotMeta['text'] }}">{{ $slotMeta['label'] }}</span>
 
                                     <div class="grid grid-cols-5 gap-1 mt-1">
                                         @for ($position = 1; $position <= 3; $position++)
@@ -105,7 +105,7 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
-                                                class="group cursor-pointer h-11 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
@@ -132,7 +132,7 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
-                                                class="group cursor-pointer h-11 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
