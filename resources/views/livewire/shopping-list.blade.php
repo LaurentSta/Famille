@@ -1,5 +1,5 @@
 <div class="pb-24" x-data>
-    <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6 min-h-screen">
+    <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6 min-h-screen">
         {{-- Barre latérale : catalogue d'ingrédients --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0 flex flex-col">
             <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
@@ -50,21 +50,23 @@
                 <button wire:click="nextYear" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
             </div>
 
-            <div class="flex gap-1.5 overflow-x-auto pb-1 mb-4 -mx-1 px-1">
-                @foreach ($monthTabs as $tab)
-                    @php $isActive = $tab['start']->toDateString() === $monthStart->toDateString(); @endphp
-                    <button
-                        wire:click="selectMonth('{{ $tab['start']->toDateString() }}')"
-                        @if ($isActive) x-init="$el.scrollIntoView({inline: 'center', block: 'nearest'})" @endif
-                        class="cursor-pointer shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap capitalize {{ $isActive ? 'bg-brand-orange text-white' : 'bg-white text-neutral-600 shadow-sm' }}"
-                    >
-                        <span class="inline-block size-1.5 rounded-full {{ $tab['filled'] > 0 ? ($isActive ? 'bg-white' : 'bg-brand-orange') : ($isActive ? 'bg-white/40' : 'bg-neutral-300') }}"></span>
-                        {{ $tab['start']->locale('fr')->translatedFormat('M') }}
-                        @if ($tab['filled'] > 0)
-                            <span class="{{ $isActive ? 'text-white/80' : 'text-neutral-400' }}">({{ $tab['filled'] }})</span>
-                        @endif
-                    </button>
-                @endforeach
+            <div class="bg-white rounded-xl shadow-sm p-3 mb-3">
+                <div class="flex gap-2 justify-between overflow-x-auto">
+                    @foreach ($monthTabs as $tab)
+                        @php $isActive = $tab['start']->toDateString() === $monthStart->toDateString(); @endphp
+                        <button
+                            wire:click="selectMonth('{{ $tab['start']->toDateString() }}')"
+                            @if ($isActive) x-init="$el.scrollIntoView({inline: 'center', block: 'nearest'})" @endif
+                            class="cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm whitespace-nowrap capitalize {{ $isActive ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-600' }}"
+                        >
+                            <span class="inline-block size-1.5 rounded-full {{ $tab['filled'] > 0 ? ($isActive ? 'bg-white' : 'bg-brand-orange') : ($isActive ? 'bg-white/40' : 'bg-neutral-300') }}"></span>
+                            {{ $tab['start']->locale('fr')->translatedFormat('M') }}
+                            @if ($tab['filled'] > 0)
+                                <span class="{{ $isActive ? 'text-white/80' : 'text-neutral-400' }}">({{ $tab['filled'] }})</span>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
             </div>
 
             <p class="text-sm text-neutral-500 mb-4 capitalize">
