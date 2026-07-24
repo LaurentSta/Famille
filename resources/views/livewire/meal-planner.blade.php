@@ -1,16 +1,22 @@
 <div class="pb-24" x-data="{ selected: null }">
-    <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6">
+    <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6 min-h-screen">
         {{-- Barre latérale --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0 flex flex-col">
             <template x-if="!selected">
-                <div class="text-xs text-white bg-brand-orange rounded-lg px-3 py-2 mb-3">
-                    <p><span class="font-semibold">1.</span> Sélectionne un plat ci-dessous.</p>
-                    <p class="mt-1"><span class="font-semibold">2.</span> Glisse-le (ou touche une case) pour le placer dans le planning.</p>
+                <div class="text-sm text-white bg-brand-orange rounded-lg px-4 py-3 mb-3 space-y-2">
+                    <p class="flex items-center gap-2">
+                        <span class="shrink-0 size-5 flex items-center justify-center rounded-full bg-white/25 text-xs font-bold">1</span>
+                        <span>Sélectionne un plat ci-dessous.</span>
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <span class="shrink-0 size-5 flex items-center justify-center rounded-full bg-white/25 text-xs font-bold">2</span>
+                        <span>Glisse-le (ou touche une case) pour le placer dans le planning.</span>
+                    </p>
                 </div>
             </template>
 
             <template x-if="selected">
-                <div class="text-xs text-white bg-brand-orange rounded-lg px-3 py-2 mb-3">
+                <div class="text-sm text-white bg-brand-orange rounded-lg px-4 py-3 mb-3">
                     <p class="font-semibold" x-text="selected.name"></p>
                     <template x-if="selected.ingredients && selected.ingredients.length">
                         <ul class="list-disc list-inside mt-1 space-y-0.5">
