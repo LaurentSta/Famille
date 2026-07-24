@@ -1,9 +1,9 @@
 <div class="pb-24" x-data>
-    <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6">
+    <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6 min-h-screen">
         {{-- Barre latérale : catalogue d'ingrédients --}}
-        <aside class="w-28 sm:w-56 lg:w-72 shrink-0">
-            <div class="bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10">
-                <div class="bg-white rounded-lg p-2.5 sm:p-4">
+        <aside class="w-28 sm:w-56 lg:w-72 shrink-0 flex flex-col">
+            <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
+                <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
@@ -12,7 +12,7 @@
                     >
 
                     <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-mustard rounded-full px-2.5 py-1 mb-2">Ingrédients</h2>
-                    <ul class="space-y-1 max-h-72 overflow-y-auto mb-4">
+                    <ul class="flex-1 min-h-0 space-y-1 overflow-y-auto mb-4">
                         @foreach ($catalog as $ingredient)
                             @php $inList = $effectiveIds->contains($ingredient->id); @endphp
                             <li
