@@ -1,8 +1,8 @@
 <div class="pb-24" x-data="{ selected: null }">
-    <div class="lg:flex lg:items-start lg:gap-6 max-w-5xl mx-auto px-4 py-6">
+    <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6">
         {{-- Barre latérale --}}
-        <aside class="lg:w-72 lg:shrink-0 mb-6 lg:mb-0">
-            <div class="bg-white rounded-xl shadow-sm p-4 sticky top-4 z-10">
+        <aside class="w-28 sm:w-56 lg:w-72 shrink-0">
+            <div class="bg-white rounded-xl shadow-sm p-2.5 sm:p-4 sticky top-4 z-10">
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="search"
