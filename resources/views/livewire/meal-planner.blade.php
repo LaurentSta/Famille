@@ -2,56 +2,58 @@
     <div class="flex items-stretch gap-3 lg:gap-6 max-w-5xl mx-auto px-4 py-6">
         {{-- Barre latérale --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0">
-            <div class="bg-white rounded-xl shadow-sm p-2.5 sm:p-4 sticky top-4 z-10">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Rechercher un plat…"
-                    class="w-full rounded-lg border-neutral-200 text-sm mb-3"
-                >
+            <div class="bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10">
+                <div class="bg-white rounded-lg p-2.5 sm:p-4">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Rechercher un plat…"
+                        class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
+                    >
 
-                <template x-if="selected">
-                    <p class="text-xs text-brand-orange mb-3">
-                        <span x-text="selected.name"></span> sélectionné — touche une case pour le placer.
-                        <button type="button" class="underline" x-on:click="selected = null">annuler</button>
-                    </p>
-                </template>
+                    <template x-if="selected">
+                        <p class="text-xs text-white bg-brand-orange rounded-lg px-2 py-1.5 mb-3">
+                            <span x-text="selected.name"></span> sélectionné — touche une case pour le placer.
+                            <button type="button" class="underline" x-on:click="selected = null">annuler</button>
+                        </p>
+                    </template>
 
-                <h2 class="text-sm font-medium text-brand-mustard mb-2">Plats</h2>
-                <ul class="space-y-1 max-h-56 overflow-y-auto mb-4">
-                    @foreach ($savoryDishes as $dish)
-                        <li
-                            draggable="true"
-                            x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                            x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'plat' }"
-                            class="px-2 py-1.5 rounded-lg text-sm cursor-grab"
-                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-orange/10 text-brand-orange' : 'hover:bg-neutral-50'"
-                        >
-                            {{ $dish->name }}
-                        </li>
-                    @endforeach
-                    @if ($savoryDishes->isEmpty())
-                        <li class="text-sm text-neutral-400">Aucun résultat</li>
-                    @endif
-                </ul>
+                    <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-mustard rounded-full px-2.5 py-1 mb-2">Plats</h2>
+                    <ul class="space-y-1 max-h-56 overflow-y-auto mb-4">
+                        @foreach ($savoryDishes as $dish)
+                            <li
+                                draggable="true"
+                                x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'plat' }"
+                                class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
+                                :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-mustard text-white border-brand-mustard' : 'border-transparent hover:bg-brand-mustard/10 hover:border-brand-mustard/50'"
+                            >
+                                {{ $dish->name }}
+                            </li>
+                        @endforeach
+                        @if ($savoryDishes->isEmpty())
+                            <li class="text-sm text-neutral-400">Aucun résultat</li>
+                        @endif
+                    </ul>
 
-                <h2 class="text-sm font-medium text-brand-red mb-2">Desserts</h2>
-                <ul class="space-y-1 max-h-40 overflow-y-auto">
-                    @foreach ($dessertDishes as $dish)
-                        <li
-                            draggable="true"
-                            x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                            x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'dessert' }"
-                            class="px-2 py-1.5 rounded-lg text-sm cursor-grab"
-                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red/10 text-brand-red' : 'hover:bg-neutral-50'"
-                        >
-                            {{ $dish->name }}
-                        </li>
-                    @endforeach
-                    @if ($dessertDishes->isEmpty())
-                        <li class="text-sm text-neutral-400">Aucun résultat</li>
-                    @endif
-                </ul>
+                    <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-red rounded-full px-2.5 py-1 mb-2">Desserts</h2>
+                    <ul class="space-y-1 max-h-40 overflow-y-auto">
+                        @foreach ($dessertDishes as $dish)
+                            <li
+                                draggable="true"
+                                x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'dessert' }"
+                                class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
+                                :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'border-transparent hover:bg-brand-red/10 hover:border-brand-red/50'"
+                            >
+                                {{ $dish->name }}
+                            </li>
+                        @endforeach
+                        @if ($dessertDishes->isEmpty())
+                            <li class="text-sm text-neutral-400">Aucun résultat</li>
+                        @endif
+                    </ul>
+                </div>
             </div>
         </aside>
 
@@ -101,14 +103,14 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
-                                                class="h-11 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="group h-11 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->name }}</span>
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
-                                                        class="absolute top-0 right-0.5 text-neutral-400"
+                                                        class="absolute -top-1 -right-1 size-4 flex items-center justify-center rounded-full bg-white shadow text-neutral-500 text-xs leading-none transition-transform group-hover:scale-150 group-hover:text-brand-red"
                                                     >×</button>
                                                 @else
                                                     <span class="text-brand-mustard/50">+</span>
@@ -124,14 +126,14 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
-                                                class="h-11 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="group h-11 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->name }}</span>
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
-                                                        class="absolute top-0 right-0.5 text-neutral-400"
+                                                        class="absolute -top-1 -right-1 size-4 flex items-center justify-center rounded-full bg-white shadow text-neutral-500 text-xs leading-none transition-transform group-hover:scale-150 group-hover:text-brand-red"
                                                     >×</button>
                                                 @else
                                                     <span class="text-brand-red/40">+</span>
