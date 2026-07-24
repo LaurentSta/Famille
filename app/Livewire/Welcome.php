@@ -8,6 +8,8 @@ class Welcome extends Component
 {
     public function render()
     {
-        return view('livewire.welcome')->layout('layouts.app');
+        return view('livewire.welcome', [
+            'greeting' => now()->hour < 18 ? 'Bonjour' : 'Bonsoir',
+        ])->layout('layouts.app');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AiMessage;
 use App\Models\Dish;
 use App\Models\Ingredient;
 use App\Services\DeepSeekClient;
@@ -31,6 +32,15 @@ PROMPT;
 
     public string $input = '';
 
+    public function mount(): void
+    {
+        $this->messages = AiMessage::where('family_id', auth()->user()->family_id)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (AiMessage $m) => $this->toArray($m))
+            ->all();
+    }
+
     public function send(): void
     {
         $text = trim($this->input);
@@ -39,7 +49,14 @@ PROMPT;
             return;
         }
 
-        $this->messages[] = ['role' => 'user', 'content' => $text, 'dish' => null, 'added' => false];
+        $familyId = auth()->user()->family_id;
+
+        $userMessage = AiMessage::create([
+            'family_id' => $familyId,
+            'role' => 'user',
+            'content' => $text,
+        ]);
+        $this->messages[] = $this->toArray($userMessage);
         $this->input = '';
 
         $history = collect($this->messages)
@@ -53,14 +70,16 @@ PROMPT;
             $reply = app(DeepSeekClient::class)->chat($history);
             [$displayText, $dish] = $this->extractDish($reply);
 
-            $this->messages[] = [
+            $assistantMessage = AiMessage::create([
+                'family_id' => $familyId,
                 'role' => 'assistant',
                 'content' => $displayText,
                 'dish' => $dish,
-                'added' => false,
-            ];
+            ]);
+            $this->messages[] = $this->toArray($assistantMessage);
         } catch (Throwable $e) {
             $this->messages[] = [
+                'id' => null,
                 'role' => 'assistant',
                 'content' => "Désolé, une erreur est survenue : {$e->getMessage()}",
                 'dish' => null,
@@ -102,6 +121,21 @@ PROMPT;
         $dish->ingredients()->sync($ingredientIds);
 
         $this->messages[$index]['added'] = true;
+
+        if (! empty($entry['id'])) {
+            AiMessage::where('id', $entry['id'])->update(['added' => true]);
+        }
+    }
+
+    private function toArray(AiMessage $message): array
+    {
+        return [
+            'id' => $message->id,
+            'role' => $message->role,
+            'content' => $message->content,
+            'dish' => $message->dish,
+            'added' => $message->added,
+        ];
     }
 
     /**
