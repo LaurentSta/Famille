@@ -18,6 +18,8 @@ class MealPlanner extends Component
 
     public string $search = '';
 
+    public string $filter = 'all';
+
     public function mount(): void
     {
         $this->week ??= Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
@@ -93,14 +95,18 @@ class MealPlanner extends Component
             ->get()
             ->keyBy(fn ($meal) => $meal->date->toDateString().'-'.$meal->meal_slot.'-'.$meal->course.'-'.$meal->position);
 
-        $savoryQuery = Dish::where('family_id', $familyId)->where(function ($q) {
-            $q->where('type', '!=', 'Dessert')->orWhereNull('type');
-        });
-        $dessertQuery = Dish::where('family_id', $familyId)->where('type', 'Dessert');
+        $dishesQuery = Dish::where('family_id', $familyId);
+
+        if ($this->filter === 'plat') {
+            $dishesQuery->where(function ($q) {
+                $q->where('type', '!=', 'Dessert')->orWhereNull('type');
+            });
+        } elseif ($this->filter === 'dessert') {
+            $dishesQuery->where('type', 'Dessert');
+        }
 
         if ($this->search !== '') {
-            $savoryQuery->where('name', 'like', '%'.$this->search.'%');
-            $dessertQuery->where('name', 'like', '%'.$this->search.'%');
+            $dishesQuery->where('name', 'like', '%'.$this->search.'%');
         }
 
         $monthStart = $this->monthStart();
@@ -127,8 +133,7 @@ class MealPlanner extends Component
         return view('livewire.meal-planner', [
             'days' => $days,
             'planned' => $planned,
-            'savoryDishes' => $savoryQuery->with('ingredients')->orderBy('name')->get(),
-            'dessertDishes' => $dessertQuery->with('ingredients')->orderBy('name')->get(),
+            'dishes' => $dishesQuery->with('ingredients')->orderBy('name')->get(),
             'weekStart' => $start,
             'monthStart' => $monthStart,
             'weekTabs' => $weekTabs,

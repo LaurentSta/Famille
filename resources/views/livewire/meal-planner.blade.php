@@ -4,12 +4,12 @@
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0">
             <div class="bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10">
                 <div class="bg-white rounded-lg p-2.5 sm:p-4">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Rechercher un plat…"
-                        class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
-                    >
+                    <template x-if="!selected">
+                        <div class="text-xs text-white bg-brand-orange rounded-lg px-3 py-2 mb-3">
+                            <p><span class="font-semibold">1.</span> Sélectionne un plat ci-dessous.</p>
+                            <p class="mt-1"><span class="font-semibold">2.</span> Glisse-le (ou touche une case) pour le placer dans le planning.</p>
+                        </div>
+                    </template>
 
                     <template x-if="selected">
                         <div class="text-xs text-white bg-brand-orange rounded-lg px-3 py-2 mb-3">
@@ -25,38 +25,42 @@
                         </div>
                     </template>
 
-                    <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-mustard rounded-full px-2.5 py-1 mb-2">Plats</h2>
-                    <ul class="space-y-1 max-h-56 overflow-y-auto mb-4">
-                        @foreach ($savoryDishes as $dish)
-                            <li
-                                draggable="true"
-                                x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: 'plat', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
-                                class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
-                                :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-mustard text-white border-brand-mustard' : 'border-transparent hover:bg-brand-mustard/10 hover:border-brand-mustard/50'"
-                            >
-                                {{ $dish->emoji }} {{ $dish->name }}
-                            </li>
-                        @endforeach
-                        @if ($savoryDishes->isEmpty())
-                            <li class="text-sm text-neutral-400">Aucun résultat</li>
-                        @endif
-                    </ul>
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Rechercher un plat…"
+                        class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
+                    >
 
-                    <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-red rounded-full px-2.5 py-1 mb-2">Desserts</h2>
-                    <ul class="space-y-1 max-h-40 overflow-y-auto">
-                        @foreach ($dessertDishes as $dish)
+                    <div class="flex gap-1.5 mb-3">
+                        @foreach (['all' => 'Tous', 'plat' => 'Plats', 'dessert' => 'Desserts'] as $value => $label)
+                            <button
+                                type="button"
+                                wire:click="$set('filter', '{{ $value }}')"
+                                class="cursor-pointer flex-1 text-xs font-medium rounded-full px-2 py-1.5 {{ $filter === $value ? 'bg-brand-mustard text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                            >
+                                {{ $label }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <ul class="space-y-1 max-h-[26rem] overflow-y-auto">
+                        @foreach ($dishes as $dish)
+                            @php
+                                $course = $dish->type === 'Dessert' ? 'dessert' : 'plat';
+                                $activeClass = $course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'bg-brand-mustard text-white border-brand-mustard';
+                            @endphp
                             <li
                                 draggable="true"
                                 x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: 'dessert', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: '{{ $course }}', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
-                                :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'border-transparent hover:bg-brand-red/10 hover:border-brand-red/50'"
+                                :class="selected && selected.id === {{ $dish->id }} ? '{{ $activeClass }}' : 'border-transparent hover:bg-neutral-50'"
                             >
                                 {{ $dish->emoji }} {{ $dish->name }}
                             </li>
                         @endforeach
-                        @if ($dessertDishes->isEmpty())
+                        @if ($dishes->isEmpty())
                             <li class="text-sm text-neutral-400">Aucun résultat</li>
                         @endif
                     </ul>
@@ -72,7 +76,7 @@
                 <button wire:click="nextMonth" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
             </div>
 
-            <div class="flex gap-1.5 overflow-x-auto pb-1 mb-4 -mx-1 px-1">
+            <div class="flex gap-1.5 justify-between overflow-x-auto pb-1 mb-1 -mx-1 px-1">
                 @foreach ($weekTabs as $tab)
                     @php $isActive = $tab['start']->toDateString() === $weekStart->toDateString(); @endphp
                     <button
@@ -88,6 +92,10 @@
                     </button>
                 @endforeach
             </div>
+
+            <p class="text-sm text-neutral-500 mb-3">
+                Repas du {{ $weekStart->locale('fr')->translatedFormat('d') }} au {{ $weekStart->copy()->addDays(6)->locale('fr')->translatedFormat('d F Y') }}
+            </p>
 
             <div class="space-y-2">
                 @foreach ($days as $day)

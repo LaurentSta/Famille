@@ -113,7 +113,7 @@ PROMPT;
                     return null;
                 }
 
-                return Ingredient::firstOrCreate(['name' => $name], ['category' => $this->normalizeCategory($category)])->id;
+                return $this->resolveIngredient($name, $category)->id;
             })
             ->filter()
             ->all();
@@ -136,6 +136,23 @@ PROMPT;
             'dish' => $message->dish,
             'added' => $message->added,
         ];
+    }
+
+    /**
+     * L'IA a tendance à recréer un ingrédient déjà existant sous une forme
+     * légèrement différente (singulier/pluriel, casse) au lieu de réutiliser
+     * l'existant — ex. "aubergine" alors que "aubergines" existe déjà.
+     * On rapproche du plus proche avant de créer une nouvelle entrée.
+     */
+    private function resolveIngredient(string $name, ?string $category): Ingredient
+    {
+        $normalized = mb_strtolower(trim($name));
+
+        $existing = Ingredient::get()->first(
+            fn (Ingredient $ingredient) => rtrim(mb_strtolower($ingredient->name), 's') === rtrim($normalized, 's')
+        );
+
+        return $existing ?? Ingredient::create(['name' => $name, 'category' => $this->normalizeCategory($category)]);
     }
 
     /**
