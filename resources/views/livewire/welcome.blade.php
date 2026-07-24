@@ -1,8 +1,20 @@
-<div class="min-h-screen flex items-center justify-center px-6">
-    <div class="max-w-md w-full text-center space-y-6">
+<div class="min-h-screen flex items-center justify-center px-6 pb-16">
+    <div class="max-w-md w-full text-center space-y-8">
         <h1 class="text-3xl font-semibold">Famille</h1>
-        <p class="text-neutral-600">
-            L'application est installée et prête. Les fonctionnalités (repas, courses, réserves) arrivent bientôt.
-        </p>
+
+        <div class="grid gap-4">
+            <a href="{{ route('planning') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+                <span class="block text-lg font-medium">Planning</span>
+                <span class="block text-sm text-neutral-500">Organiser les repas de la semaine</span>
+            </a>
+            <a href="{{ route('courses') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+                <span class="block text-lg font-medium">Courses</span>
+                <span class="block text-sm text-neutral-500">La liste générée à partir du planning</span>
+            </a>
+            <a href="{{ route('reserves') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+                <span class="block text-lg font-medium">Réserves</span>
+                <span class="block text-sm text-neutral-500">Ce qu'il y a déjà à la maison</span>
+            </a>
+        </div>
     </div>
 </div>

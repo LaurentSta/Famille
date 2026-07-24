@@ -19,6 +19,22 @@
     <body class="antialiased bg-neutral-50 text-neutral-900">
         {{ $slot }}
 
+        <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+            @foreach ([
+                ['route' => 'home', 'label' => 'Accueil'],
+                ['route' => 'planning', 'label' => 'Planning'],
+                ['route' => 'courses', 'label' => 'Courses'],
+                ['route' => 'reserves', 'label' => 'Réserves'],
+            ] as $item)
+                <a
+                    href="{{ route($item['route']) }}"
+                    class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-teal-700 font-medium' : 'text-neutral-500' }}"
+                >
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
+        </nav>
+
         @livewireScripts
 
         <script>

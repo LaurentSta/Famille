@@ -10,6 +10,11 @@ class Ingredient extends Model
     protected $fillable = [
         'name',
         'category',
+        'in_stock',
+    ];
+
+    protected $casts = [
+        'in_stock' => 'boolean',
     ];
 
     public function dishes(): BelongsToMany
