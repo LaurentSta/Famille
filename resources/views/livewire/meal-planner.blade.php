@@ -91,10 +91,23 @@
 
             <div class="space-y-2">
                 @foreach ($days as $day)
-                    <div class="bg-white rounded-xl shadow-sm p-3">
-                        <h2 class="font-medium mb-2 text-lg capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
+                    @php
+                        $hasContent = $planned->keys()->contains(fn ($k) => str_starts_with($k, $day->toDateString().'-'));
+                    @endphp
+                    <div class="bg-white rounded-xl shadow-sm p-3" x-data="{ open: {{ $hasContent ? 'true' : 'false' }} }">
+                        <button type="button" x-on:click="open = !open" class="cursor-pointer w-full flex items-center justify-between">
+                            <h2 class="font-medium text-lg capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
+                            <span class="flex items-center gap-2 text-sm text-neutral-400">
+                                @if (! $hasContent)
+                                    <span>Rien de prévu</span>
+                                @endif
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 transition-transform" :class="open ? 'rotate-180' : ''">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        </button>
 
-                        <div class="space-y-2">
+                        <div x-show="open" class="mt-2 space-y-2">
                             @foreach ([
                                 'midi' => ['label' => 'Midi', 'panel' => 'bg-brand-terracotta/15', 'text' => 'text-brand-brick'],
                                 'soir' => ['label' => 'Soir', 'panel' => 'bg-brand-brick/15', 'text' => 'text-brand-red'],
