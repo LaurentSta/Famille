@@ -6,6 +6,7 @@ use App\Models\Family;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 class Register extends Component
@@ -22,6 +23,17 @@ class Register extends Component
 
     public function register(): void
     {
+        $throttleKey = 'register|'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $this->addError('family_code', "Trop de tentatives. Réessaie dans {$seconds} secondes.");
+
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 60);
+
         $data = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],

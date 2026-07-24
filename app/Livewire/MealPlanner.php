@@ -51,9 +51,15 @@ class MealPlanner extends Component
             return;
         }
 
+        $dish = Dish::where('family_id', $this->familyId())->find((int) $dishId);
+
+        if (! $dish) {
+            return;
+        }
+
         PlannedMeal::updateOrCreate(
             ['family_id' => $this->familyId(), 'date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position],
-            ['dish_id' => (int) $dishId],
+            ['dish_id' => $dish->id],
         );
     }
 
