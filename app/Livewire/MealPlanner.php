@@ -20,14 +20,19 @@ class MealPlanner extends Component
         $this->week ??= Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
     }
 
-    public function previousWeek(): void
+    public function previousMonth(): void
     {
-        $this->week = $this->weekStart()->subWeek()->toDateString();
+        $this->week = $this->weekStart()->subMonthNoOverflow()->startOfMonth()->startOfWeek(Carbon::MONDAY)->toDateString();
     }
 
-    public function nextWeek(): void
+    public function nextMonth(): void
     {
-        $this->week = $this->weekStart()->addWeek()->toDateString();
+        $this->week = $this->weekStart()->addMonthNoOverflow()->startOfMonth()->startOfWeek(Carbon::MONDAY)->toDateString();
+    }
+
+    public function selectWeek(string $weekStart): void
+    {
+        $this->week = $weekStart;
     }
 
     public function placeDish(string $date, string $slot, string $course, int $position, $dishId): void
@@ -75,12 +80,23 @@ class MealPlanner extends Component
             $dessertQuery->where('name', 'like', '%'.$this->search.'%');
         }
 
+        $monthStart = $start->copy()->startOfMonth();
+        $monthEnd = $start->copy()->endOfMonth();
+        $weekTabs = collect();
+        $cursor = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
+        while ($cursor->lte($monthEnd)) {
+            $weekTabs->push($cursor->copy());
+            $cursor->addWeek();
+        }
+
         return view('livewire.meal-planner', [
             'days' => $days,
             'planned' => $planned,
             'savoryDishes' => $savoryQuery->orderBy('name')->get(),
             'dessertDishes' => $dessertQuery->orderBy('name')->get(),
             'weekStart' => $start,
+            'monthStart' => $monthStart,
+            'weekTabs' => $weekTabs,
         ])->layout('layouts.app');
     }
 }

@@ -57,72 +57,86 @@
 
         {{-- Grille de la semaine --}}
         <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between mb-6">
-                <button wire:click="previousWeek" class="px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">←</button>
-                <h1 class="text-lg font-semibold capitalize">
-                    Semaine du {{ $weekStart->locale('fr')->translatedFormat('d F Y') }}
-                </h1>
-                <button wire:click="nextWeek" class="px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
+            <div class="flex items-center justify-between mb-3">
+                <button wire:click="previousMonth" class="px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">←</button>
+                <h1 class="text-lg font-semibold capitalize">{{ $monthStart->locale('fr')->translatedFormat('F Y') }}</h1>
+                <button wire:click="nextMonth" class="px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
             </div>
 
-            <div class="space-y-4">
+            <div class="flex gap-1.5 overflow-x-auto pb-1 mb-4 -mx-1 px-1">
+                @foreach ($weekTabs as $tab)
+                    <button
+                        wire:click="selectWeek('{{ $tab->toDateString() }}')"
+                        class="shrink-0 px-3 py-1.5 rounded-full text-xs whitespace-nowrap {{ $tab->toDateString() === $weekStart->toDateString() ? 'bg-teal-700 text-white' : 'bg-white text-neutral-600 shadow-sm' }}"
+                    >
+                        {{ $tab->translatedFormat('d') }}–{{ $tab->copy()->addDays(6)->locale('fr')->translatedFormat('d M') }}
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="space-y-2">
                 @foreach ($days as $day)
-                    <div class="bg-white rounded-xl shadow-sm p-4">
-                        <h2 class="font-medium mb-3 capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
+                    <div class="bg-white rounded-xl shadow-sm p-2.5">
+                        <h2 class="font-medium mb-1.5 text-sm capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
 
-                        @foreach (['midi' => 'Midi', 'soir' => 'Soir'] as $slotKey => $slotLabel)
-                            <div class="py-2 border-t first:border-t-0 border-neutral-100">
-                                <span class="text-sm text-neutral-500">{{ $slotLabel }}</span>
+                        <div class="space-y-1.5">
+                            @foreach ([
+                                'midi' => ['label' => 'Midi', 'panel' => 'bg-amber-50', 'text' => 'text-amber-700'],
+                                'soir' => ['label' => 'Soir', 'panel' => 'bg-indigo-50', 'text' => 'text-indigo-700'],
+                            ] as $slotKey => $slotMeta)
+                                <div class="rounded-lg {{ $slotMeta['panel'] }} p-1.5">
+                                    <span class="text-xs font-medium {{ $slotMeta['text'] }}">{{ $slotMeta['label'] }}</span>
 
-                                <div class="grid grid-cols-5 gap-1.5 mt-2">
-                                    @for ($position = 1; $position <= 3; $position++)
-                                        @php
-                                            $meal = $planned->get($day->toDateString().'-'.$slotKey.'-plat-'.$position);
-                                        @endphp
-                                        <div
-                                            x-on:dragover.prevent
-                                            x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                            x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
-                                            class="aspect-square rounded-lg border-2 border-dashed border-neutral-200 flex items-center justify-center text-center p-1 text-[11px] leading-tight overflow-hidden relative"
-                                        >
-                                            @if ($meal?->dish)
-                                                <span>{{ $meal->dish->name }}</span>
-                                                <button
-                                                    type="button"
-                                                    wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
-                                                    class="absolute top-0 right-0.5 text-neutral-400"
-                                                >×</button>
-                                            @else
-                                                <span class="text-neutral-300">+</span>
-                                            @endif
-                                        </div>
-                                    @endfor
+                                    <div class="grid grid-cols-5 gap-1 mt-1">
+                                        @for ($position = 1; $position <= 3; $position++)
+                                            @php
+                                                $meal = $planned->get($day->toDateString().'-'.$slotKey.'-plat-'.$position);
+                                            @endphp
+                                            <div
+                                                x-on:dragover.prevent
+                                                x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
+                                                x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
+                                                class="h-11 bg-white rounded-md border border-dashed border-neutral-300 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                            >
+                                                @if ($meal?->dish)
+                                                    <span>{{ $meal->dish->name }}</span>
+                                                    <button
+                                                        type="button"
+                                                        wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
+                                                        class="absolute top-0 right-0.5 text-neutral-400"
+                                                    >×</button>
+                                                @else
+                                                    <span class="text-neutral-300">+</span>
+                                                @endif
+                                            </div>
+                                        @endfor
 
-                                    @for ($position = 1; $position <= 2; $position++)
-                                        @php
-                                            $meal = $planned->get($day->toDateString().'-'.$slotKey.'-dessert-'.$position);
-                                        @endphp
-                                        <div
-                                            x-on:dragover.prevent
-                                            x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                            x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
-                                            class="aspect-square rounded-lg border-2 border-dashed border-amber-200 flex items-center justify-center text-center p-1 text-[11px] leading-tight overflow-hidden relative"
-                                        >
-                                            @if ($meal?->dish)
-                                                <span>{{ $meal->dish->name }}</span>
-                                                <button
-                                                    type="button"
-                                                    wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
-                                                    class="absolute top-0 right-0.5 text-neutral-400"
-                                                >×</button>
-                                            @else
-                                                <span class="text-amber-300">+</span>
-                                            @endif
-                                        </div>
-                                    @endfor
+                                        @for ($position = 1; $position <= 2; $position++)
+                                            @php
+                                                $meal = $planned->get($day->toDateString().'-'.$slotKey.'-dessert-'.$position);
+                                            @endphp
+                                            <div
+                                                x-on:dragover.prevent
+                                                x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
+                                                x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
+                                                class="h-11 bg-white rounded-md border border-dashed border-rose-300 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                            >
+                                                @if ($meal?->dish)
+                                                    <span>{{ $meal->dish->name }}</span>
+                                                    <button
+                                                        type="button"
+                                                        wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
+                                                        class="absolute top-0 right-0.5 text-neutral-400"
+                                                    >×</button>
+                                                @else
+                                                    <span class="text-rose-300">+</span>
+                                                @endif
+                                            </div>
+                                        @endfor
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 @endforeach
             </div>
