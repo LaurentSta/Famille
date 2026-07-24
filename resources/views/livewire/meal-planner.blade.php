@@ -12,11 +12,17 @@
                     >
 
                     <template x-if="selected">
-                        <p class="text-xs text-white bg-brand-orange rounded-lg px-2 py-1.5 mb-3">
-                            <span class="font-semibold" x-text="selected.name"></span>
-                            <template x-if="selected.ingredients"><span x-text="' — ' + selected.ingredients"></span></template>
-                            <button type="button" class="cursor-pointer underline block mt-1" x-on:click="selected = null">annuler</button>
-                        </p>
+                        <div class="text-xs text-white bg-brand-orange rounded-lg px-3 py-2 mb-3">
+                            <p class="font-semibold" x-text="selected.name"></p>
+                            <template x-if="selected.ingredients && selected.ingredients.length">
+                                <ul class="list-disc list-inside mt-1 space-y-0.5">
+                                    <template x-for="ingredient in selected.ingredients" :key="ingredient">
+                                        <li x-text="ingredient"></li>
+                                    </template>
+                                </ul>
+                            </template>
+                            <button type="button" class="cursor-pointer underline mt-2" x-on:click="selected = null">annuler</button>
+                        </div>
                     </template>
 
                     <h2 class="inline-block text-xs font-bold uppercase tracking-wide text-white bg-brand-mustard rounded-full px-2.5 py-1 mb-2">Plats</h2>
@@ -25,7 +31,7 @@
                             <li
                                 draggable="true"
                                 x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ $dish->emoji }} {{ addslashes($dish->name) }}', course: 'plat', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: 'plat', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
                                 :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-mustard text-white border-brand-mustard' : 'border-transparent hover:bg-brand-mustard/10 hover:border-brand-mustard/50'"
                             >
@@ -43,7 +49,7 @@
                             <li
                                 draggable="true"
                                 x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: '{{ $dish->emoji }} {{ addslashes($dish->name) }}', course: 'dessert', ingredients: '{{ addslashes($dish->ingredients->pluck('name')->join(', ')) }}' }"
+                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: 'dessert', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
                                 :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'border-transparent hover:bg-brand-red/10 hover:border-brand-red/50'"
                             >
