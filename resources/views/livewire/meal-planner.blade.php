@@ -2,7 +2,7 @@
     <div class="lg:flex lg:items-start lg:gap-6 max-w-5xl mx-auto px-4 py-6">
         {{-- Barre latérale --}}
         <aside class="lg:w-72 lg:shrink-0 mb-6 lg:mb-0">
-            <div class="bg-white rounded-xl shadow-sm p-4 lg:sticky lg:top-4">
+            <div class="bg-white rounded-xl shadow-sm p-4 sticky top-4 z-10">
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="search"
