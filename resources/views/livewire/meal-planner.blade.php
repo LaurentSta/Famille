@@ -108,13 +108,16 @@
             <div class="space-y-2">
                 @foreach ($days as $day)
                     @php
-                        $hasContent = $planned->keys()->contains(fn ($k) => str_starts_with($k, $day->toDateString().'-'));
+                        $dayCount = $planned->keys()->filter(fn ($k) => str_starts_with($k, $day->toDateString().'-'))->count();
+                        $hasContent = $dayCount > 0;
                     @endphp
                     <div class="bg-white rounded-xl shadow-sm p-3" x-data="{ open: {{ $hasContent ? 'true' : 'false' }} }">
                         <button type="button" x-on:click="open = !open" class="cursor-pointer w-full flex items-center justify-between">
                             <h2 class="font-medium text-lg capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
                             <span class="flex items-center gap-2 text-sm text-neutral-400">
-                                @if (! $hasContent)
+                                @if ($hasContent)
+                                    <span>{{ $dayCount }} recette{{ $dayCount > 1 ? 's' : '' }}</span>
+                                @else
                                     <span>Rien de prévu</span>
                                 @endif
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 transition-transform" :class="open ? 'rotate-180' : ''">
