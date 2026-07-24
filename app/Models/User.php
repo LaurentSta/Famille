@@ -27,6 +27,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -34,5 +35,10 @@ class User extends Authenticatable
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at !== null && $this->last_seen_at->gt(now()->subMinutes(5));
     }
 }

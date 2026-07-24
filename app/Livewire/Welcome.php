@@ -10,6 +10,7 @@ class Welcome extends Component
     {
         return view('livewire.welcome', [
             'greeting' => now()->hour < 18 ? 'Bonjour' : 'Bonsoir',
+            'members' => auth()->user()->family->users()->orderBy('name')->get(),
         ])->layout('layouts.app');
     }
 }

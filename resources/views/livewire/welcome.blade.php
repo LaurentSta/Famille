@@ -1,8 +1,28 @@
-<div class="min-h-screen flex items-center justify-center px-6 pb-16">
+<div class="min-h-screen flex items-center justify-center px-6 pb-16" wire:poll.30s>
     <div class="max-w-md w-full text-center space-y-8">
         <div>
             <h1 class="text-3xl font-semibold text-brand-red">{{ $greeting }} {{ auth()->user()->name }} !</h1>
             <p class="text-sm text-neutral-400 mt-1">Famille {{ auth()->user()->family->name }}</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 text-left">
+            <ul class="space-y-2">
+                @foreach ($members as $member)
+                    <li class="flex items-center gap-2 text-sm">
+                        <span class="size-2 rounded-full {{ $member->isOnline() ? 'bg-green-500' : 'bg-neutral-300' }}"></span>
+                        <span class="{{ $member->id === auth()->id() ? 'font-medium' : '' }}">{{ $member->name }}</span>
+                        <span class="text-xs text-neutral-400 ml-auto">
+                            @if ($member->isOnline())
+                                En ligne
+                            @elseif ($member->last_seen_at)
+                                Vu {{ $member->last_seen_at->diffForHumans() }}
+                            @else
+                                Jamais connecté
+                            @endif
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
         <div class="grid gap-4">
