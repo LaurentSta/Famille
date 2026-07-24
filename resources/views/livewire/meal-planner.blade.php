@@ -137,7 +137,11 @@
                                             <div
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                                x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
+                                                @if ($meal?->dish)
+                                                    x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null } else { selected = { id: {{ $meal->dish->id }}, name: @js($meal->dish->emoji.' '.$meal->dish->name), course: 'plat', ingredients: @js($meal->dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
+                                                @else
+                                                    x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
+                                                @endif
                                                 class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
@@ -145,9 +149,9 @@
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
-                                                        class="cursor-pointer absolute inset-0 rounded-md bg-brand-red/90 flex items-center justify-center text-white opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity"
+                                                        class="cursor-pointer absolute -top-1 -right-1 size-5 flex items-center justify-center rounded-full bg-white shadow text-neutral-500 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:text-brand-red transition-opacity"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3">
                                                             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
                                                         </svg>
                                                     </button>
@@ -164,7 +168,11 @@
                                             <div
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                                x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
+                                                @if ($meal?->dish)
+                                                    x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null } else { selected = { id: {{ $meal->dish->id }}, name: @js($meal->dish->emoji.' '.$meal->dish->name), course: 'dessert', ingredients: @js($meal->dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
+                                                @else
+                                                    x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
+                                                @endif
                                                 class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
@@ -172,9 +180,9 @@
                                                     <button
                                                         type="button"
                                                         wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
-                                                        class="cursor-pointer absolute inset-0 rounded-md bg-brand-red/90 flex items-center justify-center text-white opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity"
+                                                        class="cursor-pointer absolute -top-1 -right-1 size-5 flex items-center justify-center rounded-full bg-white shadow text-neutral-500 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:text-brand-red transition-opacity"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3">
                                                             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
                                                         </svg>
                                                     </button>
