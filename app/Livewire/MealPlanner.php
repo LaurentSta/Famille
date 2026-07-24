@@ -13,6 +13,8 @@ class MealPlanner extends Component
     #[Url]
     public ?string $week = null;
 
+    public string $search = '';
+
     public function mount(): void
     {
         $this->week ??= Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
@@ -28,12 +30,24 @@ class MealPlanner extends Component
         $this->week = $this->weekStart()->addWeek()->toDateString();
     }
 
-    public function updateSlot(string $date, string $slot, $dishId): void
+    public function placeDish(string $date, string $slot, string $course, int $position, $dishId): void
     {
+        if ($dishId === '' || $dishId === null) {
+            $this->removeDish($date, $slot, $course, $position);
+
+            return;
+        }
+
         PlannedMeal::updateOrCreate(
-            ['date' => $date, 'meal_slot' => $slot],
-            ['dish_id' => $dishId !== '' && $dishId !== null ? (int) $dishId : null],
+            ['date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position],
+            ['dish_id' => (int) $dishId],
         );
+    }
+
+    public function removeDish(string $date, string $slot, string $course, int $position): void
+    {
+        PlannedMeal::where(['date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position])
+            ->delete();
     }
 
     private function weekStart(): Carbon
@@ -47,15 +61,25 @@ class MealPlanner extends Component
         $days = collect(range(0, 6))->map(fn ($i) => $start->copy()->addDays($i));
 
         $planned = PlannedMeal::whereBetween('date', [$start->toDateString(), $start->copy()->addDays(6)->toDateString()])
+            ->with('dish')
             ->get()
-            ->keyBy(fn ($meal) => $meal->date->toDateString().'-'.$meal->meal_slot);
+            ->keyBy(fn ($meal) => $meal->date->toDateString().'-'.$meal->meal_slot.'-'.$meal->course.'-'.$meal->position);
 
-        $dishesByType = Dish::orderBy('name')->get()->groupBy(fn ($dish) => $dish->type ?? 'Autre');
+        $savoryQuery = Dish::where(function ($q) {
+            $q->where('type', '!=', 'Dessert')->orWhereNull('type');
+        });
+        $dessertQuery = Dish::where('type', 'Dessert');
+
+        if ($this->search !== '') {
+            $savoryQuery->where('name', 'like', '%'.$this->search.'%');
+            $dessertQuery->where('name', 'like', '%'.$this->search.'%');
+        }
 
         return view('livewire.meal-planner', [
             'days' => $days,
             'planned' => $planned,
-            'dishesByType' => $dishesByType,
+            'savoryDishes' => $savoryQuery->orderBy('name')->get(),
+            'dessertDishes' => $dessertQuery->orderBy('name')->get(),
             'weekStart' => $start,
         ])->layout('layouts.app');
     }

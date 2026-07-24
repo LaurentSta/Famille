@@ -10,11 +10,13 @@ class PlannedMeal extends Model
     protected $fillable = [
         'date',
         'meal_slot',
+        'course',
+        'position',
         'dish_id',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
     ];
 
     public function dish(): BelongsTo
