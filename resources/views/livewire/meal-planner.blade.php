@@ -29,7 +29,7 @@
                 </div>
             </template>
 
-            <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[calc(100vh-2rem)]">
+            <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
                 <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
                     <input
                         type="text"
