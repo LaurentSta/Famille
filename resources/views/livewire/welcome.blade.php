@@ -1,17 +1,17 @@
 <div class="min-h-screen flex items-center justify-center px-6 pb-16">
     <div class="max-w-md w-full text-center space-y-8">
-        <h1 class="text-3xl font-semibold">Famille</h1>
+        <h1 class="text-3xl font-semibold text-brand-red">Famille</h1>
 
         <div class="grid gap-4">
-            <a href="{{ route('planning') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+            <a href="{{ route('planning') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left border-l-4 border-brand-orange">
                 <span class="block text-lg font-medium">Planning</span>
                 <span class="block text-sm text-neutral-500">Organiser les repas de la semaine</span>
             </a>
-            <a href="{{ route('courses') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+            <a href="{{ route('courses') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left border-l-4 border-brand-mustard">
                 <span class="block text-lg font-medium">Courses</span>
                 <span class="block text-sm text-neutral-500">La liste générée à partir du planning</span>
             </a>
-            <a href="{{ route('reserves') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left">
+            <a href="{{ route('reserves') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left border-l-4 border-brand-brick">
                 <span class="block text-lg font-medium">Réserves</span>
                 <span class="block text-sm text-neutral-500">Ce qu'il y a déjà à la maison</span>
             </a>

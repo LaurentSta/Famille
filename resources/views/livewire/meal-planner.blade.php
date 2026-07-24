@@ -11,13 +11,13 @@
                 >
 
                 <template x-if="selected">
-                    <p class="text-xs text-teal-700 mb-3">
+                    <p class="text-xs text-brand-orange mb-3">
                         <span x-text="selected.name"></span> sélectionné — touche une case pour le placer.
                         <button type="button" class="underline" x-on:click="selected = null">annuler</button>
                     </p>
                 </template>
 
-                <h2 class="text-sm font-medium text-neutral-500 mb-2">Plats</h2>
+                <h2 class="text-sm font-medium text-brand-mustard mb-2">Plats</h2>
                 <ul class="space-y-1 max-h-56 overflow-y-auto mb-4">
                     @foreach ($savoryDishes as $dish)
                         <li
@@ -25,7 +25,7 @@
                             x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
                             x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'plat' }"
                             class="px-2 py-1.5 rounded-lg text-sm cursor-grab"
-                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-teal-50 text-teal-700' : 'hover:bg-neutral-50'"
+                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'plat' ? 'bg-brand-orange/10 text-brand-orange' : 'hover:bg-neutral-50'"
                         >
                             {{ $dish->name }}
                         </li>
@@ -35,7 +35,7 @@
                     @endif
                 </ul>
 
-                <h2 class="text-sm font-medium text-neutral-500 mb-2">Desserts</h2>
+                <h2 class="text-sm font-medium text-brand-red mb-2">Desserts</h2>
                 <ul class="space-y-1 max-h-40 overflow-y-auto">
                     @foreach ($dessertDishes as $dish)
                         <li
@@ -43,7 +43,7 @@
                             x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
                             x-on:click="selected = { id: {{ $dish->id }}, name: '{{ addslashes($dish->name) }}', course: 'dessert' }"
                             class="px-2 py-1.5 rounded-lg text-sm cursor-grab"
-                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-amber-50 text-amber-700' : 'hover:bg-neutral-50'"
+                            :class="selected && selected.id === {{ $dish->id }} && selected.course === 'dessert' ? 'bg-brand-red/10 text-brand-red' : 'hover:bg-neutral-50'"
                         >
                             {{ $dish->name }}
                         </li>
@@ -65,11 +65,16 @@
 
             <div class="flex gap-1.5 overflow-x-auto pb-1 mb-4 -mx-1 px-1">
                 @foreach ($weekTabs as $tab)
+                    @php $isActive = $tab['start']->toDateString() === $weekStart->toDateString(); @endphp
                     <button
-                        wire:click="selectWeek('{{ $tab->toDateString() }}')"
-                        class="shrink-0 px-3 py-1.5 rounded-full text-xs whitespace-nowrap {{ $tab->toDateString() === $weekStart->toDateString() ? 'bg-teal-700 text-white' : 'bg-white text-neutral-600 shadow-sm' }}"
+                        wire:click="selectWeek('{{ $tab['start']->toDateString() }}')"
+                        class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap {{ $isActive ? 'bg-brand-orange text-white' : 'bg-white text-neutral-600 shadow-sm' }}"
                     >
-                        {{ $tab->translatedFormat('d') }}–{{ $tab->copy()->addDays(6)->locale('fr')->translatedFormat('d M') }}
+                        <span class="inline-block size-1.5 rounded-full {{ $tab['filled'] > 0 ? ($isActive ? 'bg-white' : 'bg-brand-orange') : ($isActive ? 'bg-white/40' : 'bg-neutral-300') }}"></span>
+                        {{ $tab['start']->translatedFormat('d') }}–{{ $tab['start']->copy()->addDays(6)->locale('fr')->translatedFormat('d M') }}
+                        @if ($tab['filled'] > 0)
+                            <span class="{{ $isActive ? 'text-white/80' : 'text-neutral-400' }}">({{ $tab['filled'] }})</span>
+                        @endif
                     </button>
                 @endforeach
             </div>
@@ -81,8 +86,8 @@
 
                         <div class="space-y-1.5">
                             @foreach ([
-                                'midi' => ['label' => 'Midi', 'panel' => 'bg-amber-50', 'text' => 'text-amber-700'],
-                                'soir' => ['label' => 'Soir', 'panel' => 'bg-indigo-50', 'text' => 'text-indigo-700'],
+                                'midi' => ['label' => 'Midi', 'panel' => 'bg-brand-terracotta/15', 'text' => 'text-brand-brick'],
+                                'soir' => ['label' => 'Soir', 'panel' => 'bg-brand-brick/15', 'text' => 'text-brand-red'],
                             ] as $slotKey => $slotMeta)
                                 <div class="rounded-lg {{ $slotMeta['panel'] }} p-1.5">
                                     <span class="text-xs font-medium {{ $slotMeta['text'] }}">{{ $slotMeta['label'] }}</span>
@@ -96,7 +101,7 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
-                                                class="h-11 bg-white rounded-md border border-dashed border-neutral-300 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="h-11 bg-white rounded-md border border-dashed border-brand-mustard/50 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->name }}</span>
@@ -106,7 +111,7 @@
                                                         class="absolute top-0 right-0.5 text-neutral-400"
                                                     >×</button>
                                                 @else
-                                                    <span class="text-neutral-300">+</span>
+                                                    <span class="text-brand-mustard/50">+</span>
                                                 @endif
                                             </div>
                                         @endfor
@@ -119,7 +124,7 @@
                                                 x-on:dragover.prevent
                                                 x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
                                                 x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
-                                                class="h-11 bg-white rounded-md border border-dashed border-rose-300 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
+                                                class="h-11 bg-white rounded-md border border-dashed border-brand-red/40 flex items-center justify-center text-center px-0.5 text-[10px] leading-tight overflow-hidden relative"
                                             >
                                                 @if ($meal?->dish)
                                                     <span>{{ $meal->dish->name }}</span>
@@ -129,7 +134,7 @@
                                                         class="absolute top-0 right-0.5 text-neutral-400"
                                                     >×</button>
                                                 @else
-                                                    <span class="text-rose-300">+</span>
+                                                    <span class="text-brand-red/40">+</span>
                                                 @endif
                                             </div>
                                         @endfor
@@ -142,7 +147,7 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ route('courses', ['week' => $weekStart->toDateString()]) }}" class="text-teal-700 font-medium">
+                <a href="{{ route('courses', ['week' => $weekStart->toDateString()]) }}" class="text-brand-orange font-medium">
                     Voir les courses de cette semaine →
                 </a>
             </div>

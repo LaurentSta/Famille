@@ -15,7 +15,7 @@
                                 type="checkbox"
                                 wire:click="toggle({{ $ingredient->id }})"
                                 @checked($ingredient->in_stock)
-                                class="size-5 rounded border-neutral-300 text-teal-700"
+                                class="size-5 rounded border-neutral-300 text-brand-orange"
                             >
                             <span class="{{ $ingredient->in_stock ? 'text-neutral-500' : '' }}">
                                 {{ $ingredient->name }}

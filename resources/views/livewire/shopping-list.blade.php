@@ -7,7 +7,7 @@
     @if ($ingredients->isEmpty())
         <p class="text-neutral-500">
             Aucun plat planifié cette semaine.
-            <a href="{{ route('planning', ['week' => $weekStart->toDateString()]) }}" class="text-teal-700 font-medium">
+            <a href="{{ route('planning', ['week' => $weekStart->toDateString()]) }}" class="text-brand-orange font-medium">
                 Aller au planning →
             </a>
         </p>
@@ -23,7 +23,7 @@
                                     type="checkbox"
                                     wire:click="toggle({{ $ingredient->id }})"
                                     @checked($ingredient->in_stock)
-                                    class="size-5 rounded border-neutral-300 text-teal-700"
+                                    class="size-5 rounded border-neutral-300 text-brand-orange"
                                 >
                                 <span class="{{ $ingredient->in_stock ? 'line-through text-neutral-400' : '' }}">
                                     {{ $ingredient->name }}

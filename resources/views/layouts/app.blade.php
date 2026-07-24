@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#0f766e">
+        <meta name="theme-color" content="#F28705">
 
         <title>{{ $title ?? config('app.name') }}</title>
 
@@ -28,7 +28,7 @@
             ] as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-teal-700 font-medium' : 'text-neutral-500' }}"
+                    class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-brand-orange font-medium' : 'text-neutral-500' }}"
                 >
                     {{ $item['label'] }}
                 </a>
