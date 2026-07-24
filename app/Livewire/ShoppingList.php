@@ -11,11 +11,32 @@ use Livewire\Component;
 class ShoppingList extends Component
 {
     #[Url]
-    public ?string $week = null;
+    public ?string $month = null;
+
+    #[Url]
+    public ?string $year = null;
 
     public function mount(): void
     {
-        $this->week ??= Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
+        $this->month ??= Carbon::now()->startOfMonth()->toDateString();
+        $this->year ??= Carbon::now()->startOfYear()->toDateString();
+    }
+
+    public function previousYear(): void
+    {
+        $this->year = $this->yearStart()->subYearNoOverflow()->toDateString();
+        $this->month = Carbon::parse($this->year)->startOfMonth()->toDateString();
+    }
+
+    public function nextYear(): void
+    {
+        $this->year = $this->yearStart()->addYearNoOverflow()->toDateString();
+        $this->month = Carbon::parse($this->year)->startOfMonth()->toDateString();
+    }
+
+    public function selectMonth(string $monthStart): void
+    {
+        $this->month = $monthStart;
     }
 
     public function toggle(int $ingredientId): void
@@ -24,10 +45,20 @@ class ShoppingList extends Component
         $ingredient->update(['in_stock' => ! $ingredient->in_stock]);
     }
 
+    private function monthStart(): Carbon
+    {
+        return Carbon::parse($this->month)->startOfMonth();
+    }
+
+    private function yearStart(): Carbon
+    {
+        return Carbon::parse($this->year)->startOfYear();
+    }
+
     public function render()
     {
-        $start = Carbon::parse($this->week)->startOfWeek(Carbon::MONDAY);
-        $end = $start->copy()->addDays(6);
+        $start = $this->monthStart();
+        $end = $start->copy()->endOfMonth();
 
         $ingredients = PlannedMeal::whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->whereNotNull('dish_id')
@@ -39,9 +70,28 @@ class ShoppingList extends Component
             ->sortBy([['in_stock', 'asc'], ['name', 'asc']])
             ->groupBy('category');
 
+        $yearStart = $this->yearStart();
+
+        $filledCounts = PlannedMeal::whereBetween('date', [$yearStart->toDateString(), $yearStart->copy()->endOfYear()->toDateString()])
+            ->whereNotNull('dish_id')
+            ->get()
+            ->groupBy(fn ($meal) => $meal->date->copy()->startOfMonth()->toDateString())
+            ->map->count();
+
+        $monthTabs = collect(range(0, 11))->map(function ($i) use ($yearStart, $filledCounts) {
+            $tabStart = $yearStart->copy()->addMonths($i);
+
+            return [
+                'start' => $tabStart,
+                'filled' => $filledCounts->get($tabStart->toDateString(), 0),
+            ];
+        });
+
         return view('livewire.shopping-list', [
             'ingredients' => $ingredients,
-            'weekStart' => $start,
+            'monthStart' => $start,
+            'yearStart' => $yearStart,
+            'monthTabs' => $monthTabs,
         ])->layout('layouts.app');
     }
 }

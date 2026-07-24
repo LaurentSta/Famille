@@ -147,8 +147,8 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ route('courses', ['week' => $weekStart->toDateString()]) }}" class="text-brand-orange font-medium">
-                    Voir les courses de cette semaine →
+                <a href="{{ route('courses', ['month' => $monthStart->toDateString()]) }}" class="text-brand-orange font-medium">
+                    Voir les courses de ce mois →
                 </a>
             </div>
         </div>
