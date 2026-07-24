@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\AiChat;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\MealPlanner;
@@ -25,4 +26,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/', Welcome::class)->name('home');
     Route::get('/planning', MealPlanner::class)->name('planning');
     Route::get('/courses', ShoppingList::class)->name('courses');
+    Route::get('/ia', AiChat::class)->name('ai');
 });

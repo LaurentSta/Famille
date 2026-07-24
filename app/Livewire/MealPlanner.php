@@ -127,8 +127,8 @@ class MealPlanner extends Component
         return view('livewire.meal-planner', [
             'days' => $days,
             'planned' => $planned,
-            'savoryDishes' => $savoryQuery->orderBy('name')->get(),
-            'dessertDishes' => $dessertQuery->orderBy('name')->get(),
+            'savoryDishes' => $savoryQuery->with('ingredients')->orderBy('name')->get(),
+            'dessertDishes' => $dessertQuery->with('ingredients')->orderBy('name')->get(),
             'weekStart' => $start,
             'monthStart' => $monthStart,
             'weekTabs' => $weekTabs,

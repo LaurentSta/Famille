@@ -21,11 +21,12 @@
         {{ $slot }}
 
         @auth
-            <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+            <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
                 @foreach ([
                     ['route' => 'home', 'label' => 'Accueil'],
                     ['route' => 'planning', 'label' => 'Planning'],
                     ['route' => 'courses', 'label' => 'Courses'],
+                    ['route' => 'ai', 'label' => 'IA'],
                 ] as $item)
                     <a
                         href="{{ route($item['route']) }}"
@@ -36,7 +37,7 @@
                 @endforeach
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="w-full py-3 text-center text-sm text-neutral-500">
+                    <button type="submit" class="cursor-pointer w-full py-3 text-center text-sm text-neutral-500">
                         Déconnexion
                     </button>
                 </form>
