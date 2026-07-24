@@ -20,20 +20,28 @@
     <body class="antialiased bg-neutral-50 text-neutral-900">
         {{ $slot }}
 
-        <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-3 pb-[env(safe-area-inset-bottom)]">
-            @foreach ([
-                ['route' => 'home', 'label' => 'Accueil'],
-                ['route' => 'planning', 'label' => 'Planning'],
-                ['route' => 'courses', 'label' => 'Courses'],
-            ] as $item)
-                <a
-                    href="{{ route($item['route']) }}"
-                    class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-brand-orange font-medium' : 'text-neutral-500' }}"
-                >
-                    {{ $item['label'] }}
-                </a>
-            @endforeach
-        </nav>
+        @auth
+            <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+                @foreach ([
+                    ['route' => 'home', 'label' => 'Accueil'],
+                    ['route' => 'planning', 'label' => 'Planning'],
+                    ['route' => 'courses', 'label' => 'Courses'],
+                ] as $item)
+                    <a
+                        href="{{ route($item['route']) }}"
+                        class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-brand-orange font-medium' : 'text-neutral-500' }}"
+                    >
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full py-3 text-center text-sm text-neutral-500">
+                        Déconnexion
+                    </button>
+                </form>
+            </nav>
+        @endauth
 
         @livewireScripts
 
