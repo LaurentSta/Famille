@@ -1,6 +1,7 @@
 <div class="min-h-screen flex items-center justify-center px-6">
     <div class="max-w-md w-full">
-        <h1 class="text-3xl font-semibold text-brand-red text-center mb-8">Famille</h1>
+        <h1 class="text-3xl font-semibold text-brand-red text-center">Famille</h1>
+        <p class="text-center text-sm text-neutral-400 mt-1 mb-8">Planning des repas et liste de courses, à organiser en famille.</p>
 
         <form wire:submit="login" class="bg-white rounded-2xl shadow-sm p-8 space-y-5">
             <div>
