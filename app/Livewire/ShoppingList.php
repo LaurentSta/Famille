@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Ingredient;
 use App\Models\PlannedMeal;
+use App\Models\ShoppingListOverride;
 use Carbon\Carbon;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -15,6 +16,10 @@ class ShoppingList extends Component
 
     #[Url]
     public ?string $year = null;
+
+    public string $search = '';
+
+    public string $newIngredientName = '';
 
     public function mount(): void
     {
@@ -45,6 +50,35 @@ class ShoppingList extends Component
         $ingredient->update(['in_stock' => ! $ingredient->in_stock]);
     }
 
+    public function addIngredient(int $ingredientId): void
+    {
+        ShoppingListOverride::updateOrCreate(
+            ['month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
+            ['included' => true],
+        );
+    }
+
+    public function removeIngredient(int $ingredientId): void
+    {
+        ShoppingListOverride::updateOrCreate(
+            ['month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
+            ['included' => false],
+        );
+    }
+
+    public function addNewIngredient(): void
+    {
+        $name = trim($this->newIngredientName);
+
+        if ($name === '') {
+            return;
+        }
+
+        $ingredient = Ingredient::firstOrCreate(['name' => $name]);
+        $this->addIngredient($ingredient->id);
+        $this->newIngredientName = '';
+    }
+
     private function monthStart(): Carbon
     {
         return Carbon::parse($this->month)->startOfMonth();
@@ -60,14 +94,26 @@ class ShoppingList extends Component
         $start = $this->monthStart();
         $end = $start->copy()->endOfMonth();
 
-        $ingredients = PlannedMeal::whereBetween('date', [$start->toDateString(), $end->toDateString()])
+        $derivedIds = PlannedMeal::whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->whereNotNull('dish_id')
             ->with('dish.ingredients')
             ->get()
             ->pluck('dish.ingredients')
             ->flatten()
-            ->unique('id')
-            ->sortBy([['in_stock', 'asc'], ['name', 'asc']])
+            ->pluck('id')
+            ->unique();
+
+        $overrides = ShoppingListOverride::where('month', $start->toDateString())
+            ->pluck('included', 'ingredient_id');
+
+        $excludedIds = $overrides->filter(fn ($included) => ! $included)->keys();
+        $addedIds = $overrides->filter(fn ($included) => $included)->keys();
+
+        $effectiveIds = $derivedIds->diff($excludedIds)->merge($addedIds)->unique();
+
+        $ingredients = Ingredient::whereIn('id', $effectiveIds)
+            ->get()
+            ->sortBy([['in_stock', 'asc'], ['category', 'asc'], ['name', 'asc']])
             ->groupBy('category');
 
         $yearStart = $this->yearStart();
@@ -87,8 +133,15 @@ class ShoppingList extends Component
             ];
         });
 
+        $catalogQuery = Ingredient::orderBy('name');
+        if ($this->search !== '') {
+            $catalogQuery->where('name', 'like', '%'.$this->search.'%');
+        }
+
         return view('livewire.shopping-list', [
             'ingredients' => $ingredients,
+            'catalog' => $catalogQuery->get(),
+            'effectiveIds' => $effectiveIds,
             'monthStart' => $start,
             'yearStart' => $yearStart,
             'monthTabs' => $monthTabs,
