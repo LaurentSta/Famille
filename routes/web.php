@@ -3,7 +3,6 @@
 use App\Livewire\AiChat;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
-use App\Livewire\Exchange;
 use App\Livewire\MealPlanner;
 use App\Livewire\ShoppingList;
 use App\Livewire\Welcome;
@@ -28,5 +27,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/planning', MealPlanner::class)->name('planning');
     Route::get('/courses', ShoppingList::class)->name('courses');
     Route::get('/ia', AiChat::class)->name('ai');
-    Route::get('/echanges', Exchange::class)->name('exchanges');
 });
