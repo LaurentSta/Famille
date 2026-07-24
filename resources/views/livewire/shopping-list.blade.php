@@ -2,6 +2,17 @@
     <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6 min-h-screen">
         {{-- Barre latérale : catalogue d'ingrédients --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0 flex flex-col">
+            <div class="text-sm text-white bg-brand-orange rounded-lg px-4 py-3 mb-3 space-y-2">
+                <p class="flex items-center gap-2">
+                    <span class="shrink-0 size-5 flex items-center justify-center rounded-full bg-white/25 text-xs font-bold">1</span>
+                    <span>Recherche ou clique sur un ingrédient ci-dessous pour l'ajouter à la liste.</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="shrink-0 size-5 flex items-center justify-center rounded-full bg-white/25 text-xs font-bold">2</span>
+                    <span>Coche-le une fois acheté, ou retire-le avec la croix.</span>
+                </p>
+            </div>
+
             <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
                 <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
                     <input
