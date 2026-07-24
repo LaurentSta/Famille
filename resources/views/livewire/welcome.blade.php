@@ -11,10 +11,6 @@
                 <span class="block text-lg font-medium">Courses</span>
                 <span class="block text-sm text-neutral-500">La liste générée à partir du planning</span>
             </a>
-            <a href="{{ route('reserves') }}" class="block bg-white rounded-xl shadow-sm p-6 text-left border-l-4 border-brand-brick">
-                <span class="block text-lg font-medium">Réserves</span>
-                <span class="block text-sm text-neutral-500">Ce qu'il y a déjà à la maison</span>
-            </a>
         </div>
     </div>
 </div>
