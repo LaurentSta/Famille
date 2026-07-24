@@ -50,15 +50,25 @@ class MealPlanner extends Component
         }
 
         PlannedMeal::updateOrCreate(
-            ['date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position],
+            ['family_id' => $this->familyId(), 'date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position],
             ['dish_id' => (int) $dishId],
         );
     }
 
     public function removeDish(string $date, string $slot, string $course, int $position): void
     {
-        PlannedMeal::where(['date' => $date, 'meal_slot' => $slot, 'course' => $course, 'position' => $position])
-            ->delete();
+        PlannedMeal::where([
+            'family_id' => $this->familyId(),
+            'date' => $date,
+            'meal_slot' => $slot,
+            'course' => $course,
+            'position' => $position,
+        ])->delete();
+    }
+
+    private function familyId(): int
+    {
+        return auth()->user()->family_id;
     }
 
     private function weekStart(): Carbon
@@ -73,18 +83,20 @@ class MealPlanner extends Component
 
     public function render()
     {
+        $familyId = $this->familyId();
         $start = $this->weekStart();
         $days = collect(range(0, 6))->map(fn ($i) => $start->copy()->addDays($i));
 
-        $planned = PlannedMeal::whereBetween('date', [$start->toDateString(), $start->copy()->addDays(6)->toDateString()])
+        $planned = PlannedMeal::where('family_id', $familyId)
+            ->whereBetween('date', [$start->toDateString(), $start->copy()->addDays(6)->toDateString()])
             ->with('dish')
             ->get()
             ->keyBy(fn ($meal) => $meal->date->toDateString().'-'.$meal->meal_slot.'-'.$meal->course.'-'.$meal->position);
 
-        $savoryQuery = Dish::where(function ($q) {
+        $savoryQuery = Dish::where('family_id', $familyId)->where(function ($q) {
             $q->where('type', '!=', 'Dessert')->orWhereNull('type');
         });
-        $dessertQuery = Dish::where('type', 'Dessert');
+        $dessertQuery = Dish::where('family_id', $familyId)->where('type', 'Dessert');
 
         if ($this->search !== '') {
             $savoryQuery->where('name', 'like', '%'.$this->search.'%');
@@ -100,7 +112,8 @@ class MealPlanner extends Component
             $cursor->addWeek();
         }
 
-        $filledCounts = PlannedMeal::whereBetween('date', [$weekStarts->first()->toDateString(), $weekStarts->last()->copy()->addDays(6)->toDateString()])
+        $filledCounts = PlannedMeal::where('family_id', $familyId)
+            ->whereBetween('date', [$weekStarts->first()->toDateString(), $weekStarts->last()->copy()->addDays(6)->toDateString()])
             ->whereNotNull('dish_id')
             ->get()
             ->groupBy(fn ($meal) => $meal->date->copy()->startOfWeek(Carbon::MONDAY)->toDateString())

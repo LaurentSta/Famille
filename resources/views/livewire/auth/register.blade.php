@@ -29,6 +29,7 @@
             <div>
                 <label class="block text-sm font-medium text-neutral-600 mb-1">Code famille</label>
                 <input type="text" wire:model="family_code" class="w-full rounded-lg border-neutral-200 text-sm">
+                <p class="text-xs text-neutral-400 mt-1">Crée un nouveau code, ou entre celui de ta famille pour la rejoindre.</p>
                 @error('family_code') <p class="text-brand-red text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 

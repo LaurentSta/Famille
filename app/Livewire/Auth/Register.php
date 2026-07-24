@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\Family;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,19 +26,16 @@ class Register extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
-            'family_code' => ['required'],
+            'family_code' => ['required', 'string', 'max:255'],
         ]);
 
-        if ($data['family_code'] !== config('famille.family_invite_code')) {
-            $this->addError('family_code', 'Code famille incorrect.');
-
-            return;
-        }
+        $family = Family::findOrCreateByCode($data['family_code']);
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'family_id' => $family->id,
         ]);
 
         Auth::login($user);

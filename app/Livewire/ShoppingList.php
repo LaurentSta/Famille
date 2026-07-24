@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Ingredient;
+use App\Models\IngredientStock;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingListOverride;
 use Carbon\Carbon;
@@ -46,14 +47,18 @@ class ShoppingList extends Component
 
     public function toggle(int $ingredientId): void
     {
-        $ingredient = Ingredient::findOrFail($ingredientId);
-        $ingredient->update(['in_stock' => ! $ingredient->in_stock]);
+        $stock = IngredientStock::firstOrNew([
+            'family_id' => $this->familyId(),
+            'ingredient_id' => $ingredientId,
+        ]);
+        $stock->in_stock = ! $stock->in_stock;
+        $stock->save();
     }
 
     public function addIngredient(int $ingredientId): void
     {
         ShoppingListOverride::updateOrCreate(
-            ['month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
+            ['family_id' => $this->familyId(), 'month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
             ['included' => true],
         );
     }
@@ -61,7 +66,7 @@ class ShoppingList extends Component
     public function removeIngredient(int $ingredientId): void
     {
         ShoppingListOverride::updateOrCreate(
-            ['month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
+            ['family_id' => $this->familyId(), 'month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
             ['included' => false],
         );
     }
@@ -79,6 +84,11 @@ class ShoppingList extends Component
         $this->newIngredientName = '';
     }
 
+    private function familyId(): int
+    {
+        return auth()->user()->family_id;
+    }
+
     private function monthStart(): Carbon
     {
         return Carbon::parse($this->month)->startOfMonth();
@@ -91,10 +101,12 @@ class ShoppingList extends Component
 
     public function render()
     {
+        $familyId = $this->familyId();
         $start = $this->monthStart();
         $end = $start->copy()->endOfMonth();
 
-        $derivedIds = PlannedMeal::whereBetween('date', [$start->toDateString(), $end->toDateString()])
+        $derivedIds = PlannedMeal::where('family_id', $familyId)
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->whereNotNull('dish_id')
             ->with('dish.ingredients')
             ->get()
@@ -103,7 +115,8 @@ class ShoppingList extends Component
             ->pluck('id')
             ->unique();
 
-        $overrides = ShoppingListOverride::where('month', $start->toDateString())
+        $overrides = ShoppingListOverride::where('family_id', $familyId)
+            ->where('month', $start->toDateString())
             ->pluck('included', 'ingredient_id');
 
         $excludedIds = $overrides->filter(fn ($included) => ! $included)->keys();
@@ -111,14 +124,18 @@ class ShoppingList extends Component
 
         $effectiveIds = $derivedIds->diff($excludedIds)->merge($addedIds)->unique();
 
+        $stockMap = IngredientStock::where('family_id', $familyId)->pluck('in_stock', 'ingredient_id');
+
         $ingredients = Ingredient::whereIn('id', $effectiveIds)
             ->get()
+            ->each(fn ($ingredient) => $ingredient->in_stock = (bool) $stockMap->get($ingredient->id, false))
             ->sortBy([['in_stock', 'asc'], ['category', 'asc'], ['name', 'asc']])
             ->groupBy('category');
 
         $yearStart = $this->yearStart();
 
-        $filledCounts = PlannedMeal::whereBetween('date', [$yearStart->toDateString(), $yearStart->copy()->endOfYear()->toDateString()])
+        $filledCounts = PlannedMeal::where('family_id', $familyId)
+            ->whereBetween('date', [$yearStart->toDateString(), $yearStart->copy()->endOfYear()->toDateString()])
             ->whereNotNull('dish_id')
             ->get()
             ->groupBy(fn ($meal) => $meal->date->copy()->startOfMonth()->toDateString())

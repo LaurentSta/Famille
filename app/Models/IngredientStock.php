@@ -5,19 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PlannedMeal extends Model
+class IngredientStock extends Model
 {
     protected $fillable = [
         'family_id',
-        'date',
-        'meal_slot',
-        'course',
-        'position',
-        'dish_id',
+        'ingredient_id',
+        'in_stock',
     ];
 
     protected $casts = [
-        'date' => 'date:Y-m-d',
+        'in_stock' => 'boolean',
     ];
 
     public function family(): BelongsTo
@@ -25,8 +22,8 @@ class PlannedMeal extends Model
         return $this->belongsTo(Family::class);
     }
 
-    public function dish(): BelongsTo
+    public function ingredient(): BelongsTo
     {
-        return $this->belongsTo(Dish::class);
+        return $this->belongsTo(Ingredient::class);
     }
 }
