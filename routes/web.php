@@ -1,30 +1,30 @@
 <?php
 
-use App\Livewire\AiChat;
-use App\Livewire\Auth\Login;
-use App\Livewire\Auth\Register;
-use App\Livewire\MealPlanner;
-use App\Livewire\ShoppingList;
-use App\Livewire\Welcome;
+use App\Livewire\AssistantCuisine;
+use App\Livewire\Auth\Connexion;
+use App\Livewire\Auth\Inscription;
+use App\Livewire\PlanificateurRepas;
+use App\Livewire\ListeCourses;
+use App\Livewire\Accueil;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', Login::class)->name('login');
-    Route::get('/register', Register::class)->name('register');
+    Route::get('/connexion', Connexion::class)->name('login');
+    Route::get('/inscription', Inscription::class)->name('inscription');
 });
 
-Route::post('/logout', function () {
+Route::post('/deconnexion', function () {
     Auth::logout();
     session()->invalidate();
     session()->regenerateToken();
 
     return redirect()->route('login');
-})->name('logout')->middleware('auth');
+})->name('deconnexion')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', Welcome::class)->name('home');
-    Route::get('/planning', MealPlanner::class)->name('planning');
-    Route::get('/courses', ShoppingList::class)->name('courses');
-    Route::get('/ia', AiChat::class)->name('ai');
+    Route::get('/', Accueil::class)->name('accueil');
+    Route::get('/planning', PlanificateurRepas::class)->name('planning');
+    Route::get('/courses', ListeCourses::class)->name('courses');
+    Route::get('/ia', AssistantCuisine::class)->name('assistant-cuisine');
 });

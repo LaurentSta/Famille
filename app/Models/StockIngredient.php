@@ -5,23 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ShoppingListOverride extends Model
+class StockIngredient extends Model
 {
+    protected $table = 'ingredient_stocks';
     protected $fillable = [
         'family_id',
-        'month',
         'ingredient_id',
-        'included',
+        'in_stock',
     ];
 
     protected $casts = [
-        'month' => 'date:Y-m-d',
-        'included' => 'boolean',
+        'in_stock' => 'boolean',
     ];
 
-    public function family(): BelongsTo
+    public function famille(): BelongsTo
     {
-        return $this->belongsTo(Family::class);
+        return $this->belongsTo(Famille::class, 'family_id');
     }
 
     public function ingredient(): BelongsTo

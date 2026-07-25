@@ -23,7 +23,7 @@
 
         <p class="text-center text-base text-neutral-500 mt-5">
             Pas encore de compte ?
-            <a href="{{ route('register') }}" class="text-brand-orange font-medium">S'inscrire</a>
+            <a href="{{ route('inscription') }}" class="text-brand-orange font-medium">S'inscrire</a>
         </p>
     </div>
 </div>

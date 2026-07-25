@@ -53,7 +53,19 @@
 
         {{-- Liste --}}
         <div class="flex-1 min-w-0">
-            <h1 class="text-lg font-semibold mb-4">Liste de courses</h1>
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-lg font-semibold">Liste de courses</h1>
+                <button
+                    type="button"
+                    wire:click="telecharger"
+                    class="cursor-pointer flex items-center gap-1.5 text-sm font-medium text-brand-orange bg-brand-orange/10 rounded-full px-3 py-1.5"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                        <path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v6.638l1.96-2.158a.75.75 0 1 1 1.08 1.04l-3.25 3.5a.75.75 0 0 1-1.08 0l-3.25-3.5a.75.75 0 1 1 1.08-1.04l1.96 2.158V3.75A.75.75 0 0 1 10 3ZM3.75 13a.75.75 0 0 1 .75.75v1.5c0 .414.336.75.75.75h9.5a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 1 1.5 0v1.5A2.25 2.25 0 0 1 14.75 17h-9.5A2.25 2.25 0 0 1 3 14.75v-1.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+                    </svg>
+                    Télécharger
+                </button>
+            </div>
 
             <div class="flex items-center justify-between mb-3">
                 <button wire:click="previousYear" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">←</button>
@@ -95,6 +107,13 @@
             @else
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-xs text-neutral-400 uppercase tracking-wide">
+                                <th class="pl-4 pr-2 py-2 text-left font-medium w-8" title="Déjà en stock à la maison">Stock</th>
+                                <th class="px-2 py-2 text-left font-medium">Ingrédient</th>
+                                <th class="pl-2 pr-4 py-2 w-10"></th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach ($ingredients as $category => $items)
                                 <tr>
@@ -103,12 +122,13 @@
                                     </td>
                                 </tr>
                                 @foreach ($items as $ingredient)
-                                    <tr class="border-t border-neutral-100">
+                                    <tr class="border-t border-neutral-100 {{ $ingredient->removed ? 'opacity-40' : '' }}">
                                         <td class="pl-4 pr-2 py-2 w-8">
                                             <input
                                                 type="checkbox"
                                                 wire:click="toggle({{ $ingredient->id }})"
                                                 @checked($ingredient->in_stock)
+                                                @disabled($ingredient->removed)
                                                 class="size-5 rounded border-neutral-300 text-brand-orange"
                                             >
                                         </td>
@@ -116,15 +136,25 @@
                                             {{ $ingredient->emoji }} {{ $ingredient->name }}
                                         </td>
                                         <td class="pl-2 pr-4 py-2 w-10 text-right">
-                                            <button
-                                                type="button"
-                                                wire:click="removeIngredient({{ $ingredient->id }})"
-                                                class="cursor-pointer size-7 inline-flex items-center justify-center rounded-full text-neutral-400 hover:bg-brand-red/10 hover:text-brand-red"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5">
-                                                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
-                                                </svg>
-                                            </button>
+                                            @if ($ingredient->removed)
+                                                <button
+                                                    type="button"
+                                                    wire:click="addIngredient({{ $ingredient->id }})"
+                                                    class="cursor-pointer text-xs font-medium text-brand-orange hover:underline whitespace-nowrap"
+                                                >
+                                                    Remettre
+                                                </button>
+                                            @else
+                                                <button
+                                                    type="button"
+                                                    wire:click="removeIngredient({{ $ingredient->id }})"
+                                                    class="cursor-pointer size-7 inline-flex items-center justify-center rounded-full text-neutral-400 hover:bg-brand-red/10 hover:text-brand-red"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5">
+                                                        <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

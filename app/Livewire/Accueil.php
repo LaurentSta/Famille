@@ -4,13 +4,15 @@ namespace App\Livewire;
 
 use Livewire\Component;
 
-class Welcome extends Component
+class Accueil extends Component
 {
     public function render()
     {
-        return view('livewire.welcome', [
+        $famille = auth()->user()->famille;
+
+        return view('livewire.accueil', [
             'greeting' => now()->hour < 18 ? 'Bonjour' : 'Bonsoir',
-            'members' => auth()->user()->family->users()->orderBy('name')->get(),
+            'members' => $famille?->users()->orderBy('name')->get() ?? collect(),
         ])->layout('layouts.app');
     }
 }

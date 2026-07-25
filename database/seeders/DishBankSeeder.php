@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Dish;
+use App\Models\Plat;
 use App\Models\Ingredient;
 use Illuminate\Database\Seeder;
 
@@ -24,7 +24,7 @@ class DishBankSeeder extends Seeder
         }
 
         foreach ($this->readCsv("$dataDir/dishes.csv") as $row) {
-            Dish::updateOrCreate(
+            Plat::updateOrCreate(
                 ['name' => $row['name']],
                 [
                     'type' => $row['type'] ?: null,
@@ -41,7 +41,7 @@ class DishBankSeeder extends Seeder
             $dishIngredientIds[$row['dish_name']][] = $ingredientIds[$row['ingredient_name']];
         }
 
-        $dishes = Dish::whereIn('name', array_keys($dishIngredientIds))->get()->keyBy('name');
+        $dishes = Plat::whereIn('name', array_keys($dishIngredientIds))->get()->keyBy('name');
         foreach ($dishIngredientIds as $dishName => $ids) {
             $dishes[$dishName]?->ingredients()->sync($ids);
         }
@@ -49,7 +49,7 @@ class DishBankSeeder extends Seeder
         $this->command->info(sprintf(
             '%d ingredients, %d dishes, %d dish-ingredient links imported.',
             Ingredient::count(),
-            Dish::count(),
+            Plat::count(),
             array_sum(array_map('count', $dishIngredientIds)),
         ));
     }

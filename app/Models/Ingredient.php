@@ -13,14 +13,14 @@ class Ingredient extends Model
         'category',
     ];
 
-    public function dishes(): BelongsToMany
+    public function plats(): BelongsToMany
     {
-        return $this->belongsToMany(Dish::class);
+        return $this->belongsToMany(Plat::class, 'dish_ingredient', 'ingredient_id', 'dish_id');
     }
 
     public function stocks(): HasMany
     {
-        return $this->hasMany(IngredientStock::class);
+        return $this->hasMany(StockIngredient::class);
     }
 
     public function getEmojiAttribute(): string

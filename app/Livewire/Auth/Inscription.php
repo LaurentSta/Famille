@@ -2,14 +2,14 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\Family;
+use App\Models\Famille;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
-class Register extends Component
+class Inscription extends Component
 {
     public string $name = '';
 
@@ -41,7 +41,7 @@ class Register extends Component
             'family_code' => ['required', 'string', 'max:255'],
         ]);
 
-        $family = Family::findOrCreateByCode($data['family_code']);
+        $family = Famille::trouverOuCreerParCode($data['family_code']);
 
         $user = User::create([
             'name' => $data['name'],
@@ -54,11 +54,11 @@ class Register extends Component
 
         session()->regenerate();
 
-        $this->redirect(route('home'));
+        $this->redirect(route('accueil'));
     }
 
     public function render()
     {
-        return view('livewire.auth.register')->layout('layouts.app');
+        return view('livewire.auth.inscription')->layout('layouts.app');
     }
 }

@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AiMessage extends Model
+class MessageIa extends Model
 {
+    protected $table = 'ai_messages';
     protected $fillable = [
         'family_id',
         'role',
@@ -20,8 +21,8 @@ class AiMessage extends Model
         'added' => 'boolean',
     ];
 
-    public function family(): BelongsTo
+    public function famille(): BelongsTo
     {
-        return $this->belongsTo(Family::class);
+        return $this->belongsTo(Famille::class, 'family_id');
     }
 }

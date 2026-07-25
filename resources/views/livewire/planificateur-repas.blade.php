@@ -1,8 +1,8 @@
-<div class="pb-24" x-data="{ selected: null }">
+<div class="pb-24" x-data="{ selection: null }">
     <div class="flex items-stretch gap-3 lg:gap-6 w-full px-4 lg:px-8 py-6 min-h-screen">
         {{-- Barre latérale --}}
         <aside class="w-28 sm:w-56 lg:w-72 shrink-0 flex flex-col">
-            <template x-if="!selected">
+            <template x-if="!selection">
                 <div class="text-sm text-white bg-brand-orange rounded-lg px-4 py-3 mb-3 space-y-2">
                     <p class="flex items-center gap-2">
                         <span class="shrink-0 size-5 flex items-center justify-center rounded-full bg-white/25 text-xs font-bold">1</span>
@@ -15,17 +15,17 @@
                 </div>
             </template>
 
-            <template x-if="selected">
+            <template x-if="selection">
                 <div class="text-sm text-white bg-brand-orange rounded-lg px-4 py-3 mb-3">
-                    <p class="font-semibold" x-text="selected.name"></p>
-                    <template x-if="selected.ingredients && selected.ingredients.length">
+                    <p class="font-semibold" x-text="selection.name"></p>
+                    <template x-if="selection.ingredients && selection.ingredients.length">
                         <ul class="list-disc list-inside mt-1 space-y-0.5">
-                            <template x-for="ingredient in selected.ingredients" :key="ingredient">
+                            <template x-for="ingredient in selection.ingredients" :key="ingredient">
                                 <li x-text="ingredient"></li>
                             </template>
                         </ul>
                     </template>
-                    <button type="button" class="cursor-pointer underline mt-2" x-on:click="selected = null">annuler</button>
+                    <button type="button" class="cursor-pointer underline mt-2" x-on:click="selection = null">annuler</button>
                 </div>
             </template>
 
@@ -33,7 +33,7 @@
                 <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
                     <input
                         type="text"
-                        wire:model.live.debounce.300ms="search"
+                        wire:model.live.debounce.300ms="recherche"
                         placeholder="Rechercher un plat…"
                         class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
                     >
@@ -42,8 +42,8 @@
                         @foreach (['all' => 'Tous', 'plat' => 'Plats', 'dessert' => 'Desserts'] as $value => $label)
                             <button
                                 type="button"
-                                wire:click="$set('filter', '{{ $value }}')"
-                                class="cursor-pointer flex-1 text-xs font-medium rounded-full px-2 py-1.5 {{ $filter === $value ? 'bg-brand-mustard text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                wire:click="$set('filtre', '{{ $value }}')"
+                                class="cursor-pointer flex-1 text-xs font-medium rounded-full px-2 py-1.5 {{ $filtre === $value ? 'bg-brand-mustard text-white' : 'bg-neutral-100 text-neutral-500' }}"
                             >
                                 {{ $label }}
                             </button>
@@ -51,22 +51,22 @@
                     </div>
 
                     <ul class="flex-1 min-h-0 space-y-1 overflow-y-auto">
-                        @foreach ($dishes as $dish)
+                        @foreach ($plats as $plat)
                             @php
-                                $course = $dish->type === 'Dessert' ? 'dessert' : 'plat';
-                                $activeClass = $course === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'bg-brand-mustard text-white border-brand-mustard';
+                                $service = $plat->type === 'Dessert' ? 'dessert' : 'plat';
+                                $activeClass = $service === 'dessert' ? 'bg-brand-red text-white border-brand-red' : 'bg-brand-mustard text-white border-brand-mustard';
                             @endphp
                             <li
                                 draggable="true"
-                                x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $dish->id }}')"
-                                x-on:click="selected = { id: {{ $dish->id }}, name: @js($dish->emoji.' '.$dish->name), course: '{{ $course }}', ingredients: @js($dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
+                                x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $plat->id }}')"
+                                x-on:click="selection = { id: {{ $plat->id }}, name: @js($plat->emoji.' '.$plat->name), course: '{{ $service }}', ingredients: @js($plat->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) }"
                                 class="px-2 py-1.5 rounded-lg text-sm cursor-grab border-l-4"
-                                :class="selected && selected.id === {{ $dish->id }} ? '{{ $activeClass }}' : 'border-transparent hover:bg-neutral-50'"
+                                :class="selection && selection.id === {{ $plat->id }} ? '{{ $activeClass }}' : 'border-transparent hover:bg-neutral-50'"
                             >
-                                {{ $dish->emoji }} {{ $dish->name }}
+                                {{ $plat->emoji }} {{ $plat->name }}
                             </li>
                         @endforeach
-                        @if ($dishes->isEmpty())
+                        @if ($plats->isEmpty())
                             <li class="text-sm text-neutral-400">Aucun résultat</li>
                         @endif
                     </ul>
@@ -77,17 +77,17 @@
         {{-- Grille de la semaine --}}
         <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between mb-3">
-                <button wire:click="previousMonth" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">←</button>
-                <h1 class="text-lg font-semibold capitalize">{{ $monthStart->locale('fr')->translatedFormat('F Y') }}</h1>
-                <button wire:click="nextMonth" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
+                <button wire:click="moisPrecedent" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">←</button>
+                <h1 class="text-lg font-semibold capitalize">{{ $debutMois->locale('fr')->translatedFormat('F Y') }}</h1>
+                <button wire:click="moisSuivant" class="cursor-pointer px-3 py-2 rounded-lg bg-white shadow-sm text-neutral-600">→</button>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm p-3 mb-3">
                 <div class="flex gap-2 justify-between overflow-x-auto">
-                    @foreach ($weekTabs as $tab)
-                        @php $isActive = $tab['start']->toDateString() === $weekStart->toDateString(); @endphp
+                    @foreach ($ongletsSemaines as $tab)
+                        @php $isActive = $tab['start']->toDateString() === $debutSemaine->toDateString(); @endphp
                         <button
-                            wire:click="selectWeek('{{ $tab['start']->toDateString() }}')"
+                            wire:click="selectionnerSemaine('{{ $tab['start']->toDateString() }}')"
                             @if ($isActive) x-init="$el.scrollIntoView({inline: 'center', block: 'nearest'})" @endif
                             class="cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm whitespace-nowrap {{ $isActive ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-600' }}"
                         >
@@ -102,16 +102,16 @@
             </div>
 
             <p class="text-sm text-neutral-500 mb-3">
-                Repas du {{ $weekStart->locale('fr')->translatedFormat('d') }} au {{ $weekStart->copy()->addDays(6)->locale('fr')->translatedFormat('d F Y') }}
+                Repas du {{ $debutSemaine->locale('fr')->translatedFormat('d') }} au {{ $debutSemaine->copy()->addDays(6)->locale('fr')->translatedFormat('d F Y') }}
             </p>
 
             <div class="space-y-2">
-                @foreach ($days as $day)
+                @foreach ($jours as $day)
                     @php
-                        $dayCount = $planned->keys()->filter(fn ($k) => str_starts_with($k, $day->toDateString().'-'))->count();
+                        $dayCount = $repasPlanifies->keys()->filter(fn ($k) => str_starts_with($k, $day->toDateString().'-'))->count();
                         $hasContent = $dayCount > 0;
                     @endphp
-                    <div class="bg-white rounded-xl shadow-sm p-3" x-data="{ open: {{ $hasContent ? 'true' : 'false' }} }">
+                    <div wire:key="jour-{{ $day->toDateString() }}" class="bg-white rounded-xl shadow-sm p-3" x-data="{ open: {{ $hasContent ? 'true' : 'false' }} }">
                         <button type="button" x-on:click="open = !open" class="cursor-pointer w-full flex items-center justify-between">
                             <h2 class="font-medium text-lg capitalize">{{ $day->locale('fr')->translatedFormat('l d/m') }}</h2>
                             <span class="flex items-center gap-2 text-sm text-neutral-400">
@@ -137,30 +137,31 @@
                                     <div class="grid grid-cols-5 gap-1 mt-1">
                                         @for ($position = 1; $position <= 3; $position++)
                                             @php
-                                                $meal = $planned->get($day->toDateString().'-'.$slotKey.'-plat-'.$position);
+                                                $meal = $repasPlanifies->get($day->toDateString().'-'.$slotKey.'-plat-'.$position);
                                             @endphp
                                             <div
+                                                wire:key="case-{{ $day->toDateString() }}-{{ $slotKey }}-plat-{{ $position }}"
                                                 x-on:dragover.prevent
-                                                x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                                @if ($meal?->dish)
-                                                    x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null } else { selected = { id: {{ $meal->dish->id }}, name: @js($meal->dish->emoji.' '.$meal->dish->name), course: 'plat', ingredients: @js($meal->dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
+                                                x-on:drop.prevent="$wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
+                                                @if ($meal?->plat)
+                                                    x-on:click="if (selection && selection.course === 'plat') { $wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selection.id); selection = null } else { selection = { id: {{ $meal->plat->id }}, name: @js($meal->plat->emoji.' '.$meal->plat->name), course: 'plat', ingredients: @js($meal->plat->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
                                                 @else
-                                                    x-on:click="if (selected && selected.course === 'plat') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selected.id); selected = null }"
+                                                    x-on:click="if (selection && selection.course === 'plat') { $wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }}, selection.id); selection = null }"
                                                 @endif
                                                 class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-mustard/50 relative"
                                             >
                                                 <div class="absolute inset-0 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden">
-                                                    @if ($meal?->dish)
-                                                        <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
+                                                    @if ($meal?->plat)
+                                                        <span>{{ $meal->plat->emoji }} {{ $meal->plat->name }}</span>
                                                     @else
                                                         <span class="text-brand-mustard/50 text-2xl leading-none font-light">+</span>
                                                     @endif
                                                 </div>
 
-                                                @if ($meal?->dish)
+                                                @if ($meal?->plat)
                                                     <button
                                                         type="button"
-                                                        wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
+                                                        wire:click.stop="retirerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'plat', {{ $position }})"
                                                         class="cursor-pointer absolute -top-2 -right-2 z-10 size-6 flex items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5 text-neutral-500 text-lg leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:text-brand-red transition-opacity"
                                                     >×</button>
                                                 @endif
@@ -169,30 +170,31 @@
 
                                         @for ($position = 1; $position <= 2; $position++)
                                             @php
-                                                $meal = $planned->get($day->toDateString().'-'.$slotKey.'-dessert-'.$position);
+                                                $meal = $repasPlanifies->get($day->toDateString().'-'.$slotKey.'-dessert-'.$position);
                                             @endphp
                                             <div
+                                                wire:key="case-{{ $day->toDateString() }}-{{ $slotKey }}-dessert-{{ $position }}"
                                                 x-on:dragover.prevent
-                                                x-on:drop.prevent="$wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
-                                                @if ($meal?->dish)
-                                                    x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null } else { selected = { id: {{ $meal->dish->id }}, name: @js($meal->dish->emoji.' '.$meal->dish->name), course: 'dessert', ingredients: @js($meal->dish->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
+                                                x-on:drop.prevent="$wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, $event.dataTransfer.getData('text/plain'))"
+                                                @if ($meal?->plat)
+                                                    x-on:click="if (selection && selection.course === 'dessert') { $wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selection.id); selection = null } else { selection = { id: {{ $meal->plat->id }}, name: @js($meal->plat->emoji.' '.$meal->plat->name), course: 'dessert', ingredients: @js($meal->plat->ingredients->map(fn ($i) => $i->emoji.' '.$i->name)) } }"
                                                 @else
-                                                    x-on:click="if (selected && selected.course === 'dessert') { $wire.placeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selected.id); selected = null }"
+                                                    x-on:click="if (selection && selection.course === 'dessert') { $wire.placerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }}, selection.id); selection = null }"
                                                 @endif
                                                 class="group cursor-pointer h-16 bg-white rounded-md border border-dashed border-brand-red/40 relative"
                                             >
                                                 <div class="absolute inset-0 flex items-center justify-center text-center px-1 text-sm leading-snug overflow-hidden">
-                                                    @if ($meal?->dish)
-                                                        <span>{{ $meal->dish->emoji }} {{ $meal->dish->name }}</span>
+                                                    @if ($meal?->plat)
+                                                        <span>{{ $meal->plat->emoji }} {{ $meal->plat->name }}</span>
                                                     @else
                                                         <span class="text-brand-red/40 text-2xl leading-none font-light">+</span>
                                                     @endif
                                                 </div>
 
-                                                @if ($meal?->dish)
+                                                @if ($meal?->plat)
                                                     <button
                                                         type="button"
-                                                        wire:click.stop="removeDish('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
+                                                        wire:click.stop="retirerPlat('{{ $day->toDateString() }}', '{{ $slotKey }}', 'dessert', {{ $position }})"
                                                         class="cursor-pointer absolute -top-2 -right-2 z-10 size-6 flex items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5 text-neutral-500 text-lg leading-none opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:text-brand-red transition-opacity"
                                                     >×</button>
                                                 @endif
@@ -207,7 +209,7 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ route('courses', ['month' => $monthStart->toDateString()]) }}" class="text-brand-orange font-medium">
+                <a href="{{ route('courses', ['mois' => $debutMois->toDateString()]) }}" class="text-brand-orange font-medium">
                     Voir les courses de ce mois →
                 </a>
             </div>

@@ -2,14 +2,14 @@
 
 namespace App\Livewire;
 
-use App\Models\AiMessage;
-use App\Models\Dish;
+use App\Models\MessageIa;
+use App\Models\Plat;
 use App\Models\Ingredient;
-use App\Services\DeepSeekClient;
+use App\Services\ClientDeepSeek;
 use Livewire\Component;
 use Throwable;
 
-class AiChat extends Component
+class AssistantCuisine extends Component
 {
     private const SYSTEM_PROMPT = <<<'PROMPT'
 Tu es un assistant culinaire pour une application familiale de planning de repas. Tu ne dois parler QUE de cuisine : recettes, ingrédients, techniques, idées de plats, suggestions de repas. Si on te pose une question qui n'a aucun rapport avec la cuisine, réponds poliment que tu ne peux parler que de cuisine et invite à reformuler une question culinaire.
@@ -34,10 +34,10 @@ PROMPT;
 
     public function mount(): void
     {
-        $this->messages = AiMessage::where('family_id', auth()->user()->family_id)
+        $this->messages = MessageIa::where('family_id', auth()->user()->family_id)
             ->orderBy('id')
             ->get()
-            ->map(fn (AiMessage $m) => $this->toArray($m))
+            ->map(fn (MessageIa $m) => $this->toArray($m))
             ->all();
     }
 
@@ -49,15 +49,54 @@ PROMPT;
             return;
         }
 
+        $this->input = '';
+        $this->ask($text);
+    }
+
+    public function suggestFromStock(): void
+    {
         $familyId = auth()->user()->family_id;
 
-        $userMessage = AiMessage::create([
+        $stockedNames = Ingredient::whereHas(
+            'stocks',
+            fn ($q) => $q->where('family_id', $familyId)->where('in_stock', true)
+        )->orderBy('name')->pluck('name');
+
+        if ($stockedNames->isEmpty()) {
+            // Placards vides : pas d'appel à l'IA (coût inutile), on répond directement.
+            $this->messages[] = [
+                'id' => null,
+                'role' => 'user',
+                'content' => 'Je ne sais pas quoi manger !',
+                'dish' => null,
+                'added' => false,
+            ];
+            $this->messages[] = [
+                'id' => null,
+                'role' => 'assistant',
+                'content' => 'Tes placards sont vides ! Coche ce que tu as déjà chez toi dans la liste de courses, puis reviens me demander une idée.',
+                'dish' => null,
+                'added' => false,
+            ];
+
+            return;
+        }
+
+        $text = "Je ne sais pas quoi manger ! Voici ce que j'ai en stock : {$stockedNames->implode(', ')}. Propose-moi 2 ou 3 idées de plats qui utilisent en priorité ces ingrédients.";
+
+        $this->ask($text);
+    }
+
+    private function ask(string $text): void
+    {
+        $familyId = auth()->user()->family_id;
+
+        $userMessage = MessageIa::create([
             'family_id' => $familyId,
             'role' => 'user',
             'content' => $text,
         ]);
         $this->messages[] = $this->toArray($userMessage);
-        $this->input = '';
 
         $history = collect($this->messages)
             ->slice(-12)
@@ -67,10 +106,10 @@ PROMPT;
             ->all();
 
         try {
-            $reply = app(DeepSeekClient::class)->chat($history);
+            $reply = app(ClientDeepSeek::class)->chat($history);
             [$displayText, $dish] = $this->extractDish($reply);
 
-            $assistantMessage = AiMessage::create([
+            $assistantMessage = MessageIa::create([
                 'family_id' => $familyId,
                 'role' => 'assistant',
                 'content' => $displayText,
@@ -98,7 +137,7 @@ PROMPT;
 
         $dishData = $entry['dish'];
 
-        $dish = Dish::create([
+        $dish = Plat::create([
             'family_id' => auth()->user()->family_id,
             'name' => $dishData['name'],
             'type' => $dishData['type'] ?? null,
@@ -123,17 +162,17 @@ PROMPT;
         $this->messages[$index]['added'] = true;
 
         if (! empty($entry['id'])) {
-            AiMessage::where('id', $entry['id'])->update(['added' => true]);
+            MessageIa::where('id', $entry['id'])->update(['added' => true]);
         }
     }
 
-    private function toArray(AiMessage $message): array
+    private function toArray(MessageIa $message): array
     {
         return [
             'id' => $message->id,
             'role' => $message->role,
             'content' => $message->content,
-            'dish' => $message->dish,
+            'dish' => $message->plat,
             'added' => $message->added,
         ];
     }
@@ -199,7 +238,7 @@ PROMPT;
 
     public function render()
     {
-        return view('livewire.ai-chat', [
+        return view('livewire.assistant-cuisine', [
             'configured' => filled(config('services.deepseek.key')),
         ])->layout('layouts.app');
     }

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
-class Login extends Component
+class Connexion extends Component
 {
     public string $email = '';
 
@@ -38,11 +38,11 @@ class Login extends Component
         RateLimiter::clear($throttleKey);
         session()->regenerate();
 
-        $this->redirect(route('home'));
+        $this->redirect(route('accueil'));
     }
 
     public function render()
     {
-        return view('livewire.auth.login')->layout('layouts.app');
+        return view('livewire.auth.connexion')->layout('layouts.app');
     }
 }

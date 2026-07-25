@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Dish extends Model
+class Plat extends Model
 {
+    protected $table = 'dishes';
     protected $fillable = [
         'family_id',
         'name',
@@ -21,14 +22,14 @@ class Dish extends Model
         'low_carb' => 'boolean',
     ];
 
-    public function family(): BelongsTo
+    public function famille(): BelongsTo
     {
-        return $this->belongsTo(Family::class);
+        return $this->belongsTo(Famille::class, 'family_id');
     }
 
     public function ingredients(): BelongsToMany
     {
-        return $this->belongsToMany(Ingredient::class);
+        return $this->belongsToMany(Ingredient::class, 'dish_ingredient', 'dish_id', 'ingredient_id');
     }
 
     public function getEmojiAttribute(): string

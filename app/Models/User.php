@@ -32,9 +32,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function family(): BelongsTo
+    public function famille(): BelongsTo
     {
-        return $this->belongsTo(Family::class);
+        return $this->belongsTo(Famille::class, 'family_id');
     }
 
     public function isOnline(): bool

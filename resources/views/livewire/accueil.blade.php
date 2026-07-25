@@ -2,7 +2,7 @@
     <div class="max-w-md w-full text-center space-y-8">
         <div>
             <h1 class="text-3xl font-semibold text-brand-red">{{ $greeting }} {{ auth()->user()->name }} !</h1>
-            <p class="text-sm text-neutral-400 mt-1">Famille {{ auth()->user()->family->name }}</p>
+            <p class="text-sm text-neutral-400 mt-1">Famille {{ auth()->user()->famille?->name ?? 'non définie' }}</p>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm p-4 text-left">

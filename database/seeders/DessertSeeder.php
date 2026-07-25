@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Dish;
+use App\Models\Plat;
 use App\Models\Ingredient;
 use Illuminate\Database\Seeder;
 
@@ -26,7 +26,7 @@ class DessertSeeder extends Seeder
     public function run(): void
     {
         foreach (self::DESSERTS as $name => $category) {
-            $dish = Dish::updateOrCreate(
+            $dish = Plat::updateOrCreate(
                 ['name' => $name],
                 ['type' => 'Dessert'],
             );

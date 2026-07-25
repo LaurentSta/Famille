@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-class DeepSeekClient
+class ClientDeepSeek
 {
     private const MODEL = 'deepseek-v4-flash';
 

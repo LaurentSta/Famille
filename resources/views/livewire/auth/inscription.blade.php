@@ -41,7 +41,7 @@
 
         <p class="text-center text-base text-neutral-500 mt-5">
             Déjà un compte ?
-            <a href="{{ route('login') }}" class="text-brand-orange font-medium">Se connecter</a>
+            <a href="{{ route('connexion') }}" class="text-brand-orange font-medium">Se connecter</a>
         </p>
     </div>
 </div>

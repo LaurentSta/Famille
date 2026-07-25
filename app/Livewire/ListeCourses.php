@@ -3,14 +3,15 @@
 namespace App\Livewire;
 
 use App\Models\Ingredient;
-use App\Models\IngredientStock;
-use App\Models\PlannedMeal;
-use App\Models\ShoppingListOverride;
+use App\Models\StockIngredient;
+use App\Models\RepasPlanifie;
+use App\Models\ModificationListeCourses;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-class ShoppingList extends Component
+class ListeCourses extends Component
 {
     #[Url]
     public ?string $month = null;
@@ -47,7 +48,7 @@ class ShoppingList extends Component
 
     public function toggle(int $ingredientId): void
     {
-        $stock = IngredientStock::firstOrNew([
+        $stock = StockIngredient::firstOrNew([
             'family_id' => $this->familyId(),
             'ingredient_id' => $ingredientId,
         ]);
@@ -57,7 +58,7 @@ class ShoppingList extends Component
 
     public function addIngredient(int $ingredientId): void
     {
-        ShoppingListOverride::updateOrCreate(
+        ModificationListeCourses::updateOrCreate(
             ['family_id' => $this->familyId(), 'month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
             ['included' => true],
         );
@@ -65,7 +66,7 @@ class ShoppingList extends Component
 
     public function removeIngredient(int $ingredientId): void
     {
-        ShoppingListOverride::updateOrCreate(
+        ModificationListeCourses::updateOrCreate(
             ['family_id' => $this->familyId(), 'month' => $this->monthStart()->toDateString(), 'ingredient_id' => $ingredientId],
             ['included' => false],
         );
@@ -99,23 +100,29 @@ class ShoppingList extends Component
         return Carbon::parse($this->year)->startOfYear();
     }
 
-    public function render()
+    /**
+     * Ingrédients de la liste de courses du mois, groupés par catégorie, avec
+     * les indicateurs `in_stock` (déjà à la maison) et `removed` (retiré alors
+     * qu'un plat planifié en a toujours besoin).
+     *
+     * @return array{0: Collection, 1: Collection} [ingrédients groupés, ids effectivement dans la liste]
+     */
+    private function ingredientsDuMois(Carbon $start): array
     {
         $familyId = $this->familyId();
-        $start = $this->monthStart();
         $end = $start->copy()->endOfMonth();
 
-        $derivedIds = PlannedMeal::where('family_id', $familyId)
+        $derivedIds = RepasPlanifie::where('family_id', $familyId)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->whereNotNull('dish_id')
-            ->with('dish.ingredients')
+            ->with('plat.ingredients')
             ->get()
-            ->pluck('dish.ingredients')
+            ->pluck('plat.ingredients')
             ->flatten()
             ->pluck('id')
             ->unique();
 
-        $overrides = ShoppingListOverride::where('family_id', $familyId)
+        $overrides = ModificationListeCourses::where('family_id', $familyId)
             ->where('month', $start->toDateString())
             ->pluck('included', 'ingredient_id');
 
@@ -124,17 +131,57 @@ class ShoppingList extends Component
 
         $effectiveIds = $derivedIds->diff($excludedIds)->merge($addedIds)->unique();
 
-        $stockMap = IngredientStock::where('family_id', $familyId)->pluck('in_stock', 'ingredient_id');
+        // Un ingrédient retiré (croix) alors qu'un plat planifié en a toujours besoin
+        // reste affiché, mais estompé, plutôt que de disparaître silencieusement :
+        // l'utilisateur peut le remettre en un clic au lieu de devoir deviner
+        // pourquoi son plat n'apporte plus ses ingrédients à la liste.
+        $removedIds = $derivedIds->intersect($excludedIds);
+        $visibleIds = $derivedIds->merge($addedIds)->unique();
 
-        $ingredients = Ingredient::whereIn('id', $effectiveIds)
+        $stockMap = StockIngredient::where('family_id', $familyId)->pluck('in_stock', 'ingredient_id');
+
+        $ingredients = Ingredient::whereIn('id', $visibleIds)
             ->get()
-            ->each(fn ($ingredient) => $ingredient->in_stock = (bool) $stockMap->get($ingredient->id, false))
-            ->sortBy([['in_stock', 'asc'], ['category', 'asc'], ['name', 'asc']])
+            ->each(function (Ingredient $ingredient) use ($stockMap, $removedIds) {
+                $ingredient->in_stock = (bool) $stockMap->get($ingredient->id, false);
+                $ingredient->removed = $removedIds->contains($ingredient->id);
+            })
+            ->sortBy([['removed', 'asc'], ['in_stock', 'asc'], ['category', 'asc'], ['name', 'asc']])
             ->groupBy('category');
+
+        return [$ingredients, $effectiveIds];
+    }
+
+    public function telecharger()
+    {
+        $start = $this->monthStart();
+        [$ingredients] = $this->ingredientsDuMois($start);
+
+        $lignes = ['Liste de courses – '.$start->locale('fr')->translatedFormat('F Y'), ''];
+
+        // Liste à plat, sans en-têtes de catégorie ni tri par "déjà en stock" :
+        // le fichier téléchargé sert de mémo complet à emporter, pas d'écran de suivi.
+        foreach ($ingredients->flatten(1)->reject(fn (Ingredient $i) => $i->removed)->sortBy('name') as $ingredient) {
+            $lignes[] = '- '.$ingredient->name;
+        }
+
+        $contenu = implode("\n", $lignes);
+
+        return response()->streamDownload(
+            fn () => print($contenu),
+            'Liste de courses - '.$start->locale('fr')->translatedFormat('F Y').'.txt',
+        );
+    }
+
+    public function render()
+    {
+        $familyId = $this->familyId();
+        $start = $this->monthStart();
+        [$ingredients, $effectiveIds] = $this->ingredientsDuMois($start);
 
         $yearStart = $this->yearStart();
 
-        $filledCounts = PlannedMeal::where('family_id', $familyId)
+        $filledCounts = RepasPlanifie::where('family_id', $familyId)
             ->whereBetween('date', [$yearStart->toDateString(), $yearStart->copy()->endOfYear()->toDateString()])
             ->whereNotNull('dish_id')
             ->get()
@@ -155,7 +202,7 @@ class ShoppingList extends Component
             $catalogQuery->where('name', 'like', '%'.$this->search.'%');
         }
 
-        return view('livewire.shopping-list', [
+        return view('livewire.liste-courses', [
             'ingredients' => $ingredients,
             'catalog' => $catalogQuery->get(),
             'effectiveIds' => $effectiveIds,
