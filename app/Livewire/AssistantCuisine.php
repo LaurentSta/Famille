@@ -6,6 +6,9 @@ use App\Models\MessageIa;
 use App\Models\Plat;
 use App\Models\Ingredient;
 use App\Services\ClientDeepSeek;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Throwable;
 
@@ -27,6 +30,8 @@ Valeurs possibles pour "category" (par ingrédient) : Frais (laitages, œufs, fr
 
 N'inclus ce bloc que lorsque le plat est clairement défini. Pour une simple discussion ou suggestion ouverte, ne l'inclus pas.
 PROMPT;
+
+    private const LIMITE_MESSAGES_PAR_MINUTE = 10;
 
     public array $messages = [];
 
@@ -90,6 +95,23 @@ PROMPT;
     private function ask(string $text): void
     {
         $familyId = auth()->user()->family_id;
+        $throttleKey = 'assistant-cuisine|'.$familyId;
+
+        if (RateLimiter::tooManyAttempts($throttleKey, self::LIMITE_MESSAGES_PAR_MINUTE)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            $this->messages[] = [
+                'id' => null,
+                'role' => 'assistant',
+                'content' => "Trop de messages envoyés d'affilée. Réessaie dans {$seconds} secondes.",
+                'dish' => null,
+                'added' => false,
+            ];
+
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 60);
 
         $userMessage = MessageIa::create([
             'family_id' => $familyId,
@@ -117,10 +139,16 @@ PROMPT;
             ]);
             $this->messages[] = $this->toArray($assistantMessage);
         } catch (Throwable $e) {
+            Log::error('assistant_cuisine.echec_appel_ia', [
+                'family_id' => $familyId,
+                'message' => $e->getMessage(),
+                'classe_exception' => $e::class,
+            ]);
+
             $this->messages[] = [
                 'id' => null,
                 'role' => 'assistant',
-                'content' => "Désolé, une erreur est survenue : {$e->getMessage()}",
+                'content' => 'Désolé, une erreur est survenue. Réessaie dans un instant.',
                 'dish' => null,
                 'added' => false,
             ];
@@ -140,7 +168,7 @@ PROMPT;
         $dish = Plat::create([
             'family_id' => auth()->user()->family_id,
             'name' => $dishData['name'],
-            'type' => $dishData['type'] ?? null,
+            'type' => $this->normalizeType($dishData['type'] ?? null),
         ]);
 
         $ingredientIds = collect($dishData['ingredients'])
@@ -172,26 +200,64 @@ PROMPT;
             'id' => $message->id,
             'role' => $message->role,
             'content' => $message->content,
-            'dish' => $message->plat,
+            'dish' => $message->dish,
             'added' => $message->added,
         ];
     }
 
     /**
      * L'IA a tendance à recréer un ingrédient déjà existant sous une forme
-     * légèrement différente (singulier/pluriel, casse) au lieu de réutiliser
-     * l'existant — ex. "aubergine" alors que "aubergines" existe déjà.
-     * On rapproche du plus proche avant de créer une nouvelle entrée.
+     * légèrement différente (singulier/pluriel, casse, accents) au lieu de
+     * réutiliser l'existant — ex. "aubergine" alors que "aubergines" existe
+     * déjà. On rapproche via une clé normalisée (sans accent, 's' final
+     * retiré) plutôt que de charger tous les ingrédients en modèles complets.
+     *
+     * Limite connue : les pluriels irréguliers français (ex. "chou"/"choux")
+     * ne sont pas couverts par un simple rtrim('s') — risque résiduel faible
+     * vu le périmètre (catalogue familial, pas industriel).
      */
     private function resolveIngredient(string $name, ?string $category): Ingredient
     {
-        $normalized = mb_strtolower(trim($name));
+        $cle = $this->cleNormalisationIngredient($name);
 
-        $existing = Ingredient::get()->first(
-            fn (Ingredient $ingredient) => rtrim(mb_strtolower($ingredient->name), 's') === rtrim($normalized, 's')
-        );
+        $idExistant = Ingredient::query()
+            ->pluck('name', 'id')
+            ->search(fn (string $nom) => $this->cleNormalisationIngredient($nom) === $cle);
 
-        return $existing ?? Ingredient::create(['name' => $name, 'category' => $this->normalizeCategory($category)]);
+        if ($idExistant !== false) {
+            return Ingredient::find($idExistant);
+        }
+
+        return Ingredient::create(['name' => $name, 'category' => $this->normalizeCategory($category)]);
+    }
+
+    private function cleNormalisationIngredient(string $name): string
+    {
+        return rtrim(Str::of($name)->trim()->ascii()->lower()->toString(), 's');
+    }
+
+    /**
+     * Le type retourné par l'IA doit correspondre exactement à l'une des
+     * valeurs canoniques de config('emoji.dish_types'), sinon on stocke null
+     * plutôt que de polluer la colonne type (utilisée pour filtrer les plats
+     * dans le planning) — l'écart est loggé pour ajuster le prompt si besoin.
+     */
+    private function normalizeType(?string $type): ?string
+    {
+        if (blank($type)) {
+            return null;
+        }
+
+        if (array_key_exists($type, config('emoji.dish_types'))) {
+            return $type;
+        }
+
+        Log::warning('assistant_cuisine.type_hors_liste', [
+            'family_id' => auth()->user()->family_id,
+            'type_recu' => $type,
+        ]);
+
+        return null;
     }
 
     /**
@@ -213,6 +279,11 @@ PROMPT;
                 return $label;
             }
         }
+
+        Log::warning('assistant_cuisine.categorie_hors_liste', [
+            'family_id' => auth()->user()->family_id,
+            'categorie_recue' => $category,
+        ]);
 
         return null;
     }

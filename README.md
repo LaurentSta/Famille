@@ -40,3 +40,7 @@ Renseigner `DEEPSEEK_API_KEY` dans `.env` pour activer l'assistant cuisine (opti
 ```bash
 php artisan test
 ```
+
+## Documentation
+
+Le wiki du projet (architecture, modèle de données, fonctionnalités détaillées, conventions, sécurité) est dans [`docs/wiki/`](docs/wiki/Home.md).

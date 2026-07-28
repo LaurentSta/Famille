@@ -21,24 +21,25 @@
         {{ $slot }}
 
         @auth
-            <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
+            <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 grid grid-cols-6 pb-[env(safe-area-inset-bottom)] shadow-lg z-50">
                 @foreach ([
                     ['route' => 'accueil', 'label' => 'Accueil'],
                     ['route' => 'planning', 'label' => 'Planning'],
                     ['route' => 'courses', 'label' => 'Courses'],
                     ['route' => 'assistant-cuisine', 'label' => 'IA'],
+                    ['route' => 'gestion-cuisine', 'label' => 'Gestion'],
                 ] as $item)
                     <a
                         href="{{ route($item['route']) }}"
-                        class="py-3 text-center text-sm {{ request()->routeIs($item['route']) ? 'text-brand-orange font-medium' : 'text-neutral-500' }}"
+                        class="flex flex-col items-center justify-center gap-1 py-3 px-0.5 text-center text-[12px] sm:text-sm whitespace-nowrap {{ request()->routeIs($item['route']) ? 'text-brand-orange font-semibold bg-brand-orange/10 rounded-t-md' : 'text-neutral-500' }}"
                     >
-                        {{ $item['label'] }}
+                        <span class="truncate">{{ $item['label'] }}</span>
                     </a>
                 @endforeach
                 <form method="POST" action="{{ route('deconnexion') }}">
                     @csrf
-                    <button type="submit" class="cursor-pointer w-full py-3 text-center text-sm text-neutral-500">
-                        Déconnexion
+                    <button type="submit" class="flex flex-col items-center justify-center gap-1 cursor-pointer w-full py-3 px-0.5 text-center text-[12px] sm:text-sm text-neutral-700 whitespace-nowrap hover:text-neutral-900">
+                        <span class="truncate">Déconnexion</span>
                     </button>
                 </form>
             </nav>

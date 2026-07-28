@@ -3,6 +3,7 @@
 use App\Livewire\AssistantCuisine;
 use App\Livewire\Auth\Connexion;
 use App\Livewire\Auth\Inscription;
+use App\Livewire\GestionCuisine;
 use App\Livewire\PlanificateurRepas;
 use App\Livewire\ListeCourses;
 use App\Livewire\Accueil;
@@ -27,4 +28,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/planning', PlanificateurRepas::class)->name('planning');
     Route::get('/courses', ListeCourses::class)->name('courses');
     Route::get('/ia', AssistantCuisine::class)->name('assistant-cuisine');
+    Route::get('/gestion', GestionCuisine::class)->name('gestion-cuisine');
 });

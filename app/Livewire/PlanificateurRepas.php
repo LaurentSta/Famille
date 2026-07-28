@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\ModificationListeCourses;
 use App\Models\Plat;
 use App\Models\RepasPlanifie;
 use Carbon\Carbon;
@@ -51,7 +52,7 @@ class PlanificateurRepas extends Component
             return;
         }
 
-        $plat = Plat::where('family_id', $this->identifiantFamille())->find((int) $identifiantPlat);
+        $plat = Plat::where('family_id', $this->identifiantFamille())->with('ingredients')->find((int) $identifiantPlat);
 
         if (! $plat) {
             return;
@@ -61,6 +62,17 @@ class PlanificateurRepas extends Component
             ['family_id' => $this->identifiantFamille(), 'date' => $date, 'meal_slot' => $creneau, 'course' => $service, 'position' => $position],
             ['dish_id' => $plat->id],
         );
+
+        // Placer une recette rend ses ingredients de nouveau necessaires ce
+        // mois-ci : on leve une eventuelle exclusion manuelle anterieure
+        // (croix dans la liste de courses) pour ne pas qu'un ingredient
+        // retire pour une autre raison reste grise/masque alors qu'une
+        // nouvelle recette en a besoin.
+        ModificationListeCourses::where('family_id', $this->identifiantFamille())
+            ->where('month', Carbon::parse($date)->startOfMonth()->toDateString())
+            ->where('included', false)
+            ->whereIn('ingredient_id', $plat->ingredients->pluck('id'))
+            ->delete();
     }
 
     public function retirerPlat(string $date, string $creneau, string $service, int $position): void
