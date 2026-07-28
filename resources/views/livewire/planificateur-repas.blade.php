@@ -29,18 +29,19 @@
                 </div>
             </template>
 
-            <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
-                <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
-                    <button
-                        type="button"
-                        wire:click="$toggle('filtresOuverts')"
-                        class="cursor-pointer text-xs text-neutral-400 hover:text-neutral-600 mb-2 flex items-center gap-1"
-                    >
-                        <span>Filtres</span>
-                        <span>{{ $filtresOuverts ? '▴' : '▾' }}</span>
-                    </button>
+            <div class="flex-1 flex flex-col min-h-0 sticky top-4 z-10 max-h-[80vh]">
+                <button
+                    type="button"
+                    wire:click="$toggle('filtresOuverts')"
+                    class="cursor-pointer self-start shrink-0 mb-1.5 flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium {{ $filtresOuverts ? 'bg-white text-brand-orange shadow-sm' : 'bg-brand-orange text-white shadow-sm' }}"
+                >
+                    <span>Filtres</span>
+                    <span>{{ $filtresOuverts ? '▴' : '▾' }}</span>
+                </button>
 
-                    @if ($filtresOuverts)
+                <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1">
+                    <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
+                        @if ($filtresOuverts)
                         <div class="space-y-1.5 mb-3">
                             <input
                                 type="text"
@@ -122,6 +123,7 @@
                             <li class="text-sm text-neutral-400">Aucun résultat</li>
                         @endif
                     </ul>
+                    </div>
                 </div>
             </div>
         </aside>
