@@ -114,6 +114,48 @@ class GestionCuisineTest extends TestCase
         $this->assertDatabaseHas('ingredients', ['id' => $ingredient->id]);
     }
 
+    public function test_selection_d_un_plat_affiche_sa_recette_rendue_en_markdown(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        $plat = Plat::create([
+            'family_id' => $user->family_id,
+            'name' => 'Gratin',
+            'notes' => "# Étapes\n\n- **Couper** les légumes\n- Enfourner",
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(GestionCuisine::class)
+            ->call('selectionnerPlat', $plat->id)
+            ->assertSet('platSelectionneId', $plat->id)
+            ->assertSee('Étapes', false)
+            ->assertSee('<strong>Couper</strong>', false);
+    }
+
+    public function test_fermeture_du_detail_reinitialise_la_selection(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        $plat = Plat::create(['family_id' => $user->family_id, 'name' => 'Gratin']);
+
+        Livewire::actingAs($user)
+            ->test(GestionCuisine::class)
+            ->call('selectionnerPlat', $plat->id)
+            ->call('fermerDetailPlat')
+            ->assertSet('platSelectionneId', null)
+            ->assertSet('formulairePlatOuvert', false);
+    }
+
+    public function test_suppression_du_plat_selectionne_ferme_le_detail(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        $plat = Plat::create(['family_id' => $user->family_id, 'name' => 'Gratin']);
+
+        Livewire::actingAs($user)
+            ->test(GestionCuisine::class)
+            ->call('selectionnerPlat', $plat->id)
+            ->call('supprimerPlat', $plat->id)
+            ->assertSet('platSelectionneId', null);
+    }
+
     public function test_validation_stricte_du_type_de_plat_et_de_la_categorie_d_ingredient(): void
     {
         $user = $this->utilisateurAvecFamille();

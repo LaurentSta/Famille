@@ -28,136 +28,207 @@
         </button>
     </div>
 
+    @php
+        $proseRecette = 'text-sm text-neutral-700 space-y-2 [&_h1]:text-base [&_h1]:font-semibold [&_h1]:text-brand-brick [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-brand-brick [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:list-inside [&_ol]:list-decimal [&_ol]:list-inside [&_li]:mt-0.5 [&_strong]:font-semibold [&_a]:text-brand-orange [&_a]:underline';
+    @endphp
+
     @if ($onglet === 'plats')
-        <div class="flex gap-2">
-            <input
-                type="text"
-                wire:model.live.debounce.300ms="recherchePlat"
-                placeholder="Rechercher une recette…"
-                class="flex-1 rounded-lg border-2 border-brand-orange/30 text-sm focus:border-brand-orange focus:ring-brand-orange"
-            >
-            <button
-                type="button"
-                wire:click="nouveauPlat"
-                class="cursor-pointer shrink-0 bg-brand-orange text-white rounded-full px-4 py-2 text-sm font-medium"
-            >
-                + Nouvelle
-            </button>
-        </div>
-
-        @if ($formulairePlatOuvert)
-            <form wire:submit.prevent="enregistrerPlat" class="bg-white rounded-xl shadow-sm p-4 space-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-neutral-500 mb-1">Nom</label>
-                    <input type="text" wire:model="platNom" class="w-full rounded-lg border-neutral-200 text-sm">
-                    @error('platNom') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-neutral-500 mb-1">Type</label>
-                    <select wire:model="platType" class="w-full rounded-lg border-neutral-200 text-sm">
-                        <option value="">—</option>
-                        @foreach ($typesDisponibles as $type => $emoji)
-                            <option value="{{ $type }}">{{ $emoji }} {{ $type }}</option>
-                        @endforeach
-                    </select>
-                    @error('platType') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <label class="flex items-center gap-2 text-sm text-neutral-600">
-                    <input type="checkbox" wire:model="platLowCarb" class="size-5 rounded border-neutral-300 text-brand-orange">
-                    Low carb
-                </label>
-
-                <div>
-                    <label class="block text-xs font-medium text-neutral-500 mb-1">Suggestion de dessert</label>
-                    <input type="text" wire:model="platDessertSuggestion" class="w-full rounded-lg border-neutral-200 text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-neutral-500 mb-1">Notes</label>
-                    <textarea wire:model="platNotes" rows="2" class="w-full rounded-lg border-neutral-200 text-sm"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-neutral-500 mb-1">Ingrédients</label>
+        <div class="grid gap-4 md:grid-cols-[260px_1fr] items-start">
+            {{-- Colonne de gauche : liste des recettes --}}
+            <div class="{{ ($platSelectionneId || $formulairePlatOuvert) ? 'hidden md:block' : '' }} space-y-3">
+                <div class="flex gap-2">
                     <input
                         type="text"
-                        wire:model.live.debounce.300ms="rechercheIngredientDuPlat"
-                        placeholder="Filtrer les ingrédients…"
-                        class="w-full rounded-lg border-neutral-200 text-sm mb-2"
+                        wire:model.live.debounce.300ms="recherchePlat"
+                        placeholder="Rechercher une recette…"
+                        class="flex-1 rounded-lg border-2 border-brand-orange/30 text-sm focus:border-brand-orange focus:ring-brand-orange"
                     >
-                    <div class="max-h-48 overflow-y-auto space-y-1 border border-neutral-100 rounded-lg p-2">
-                        @foreach ($ingredientsDisponibles as $ingredient)
-                            <label class="flex items-center gap-2 text-sm py-0.5">
-                                <input
-                                    type="checkbox"
-                                    wire:model="platIngredientIds"
-                                    value="{{ $ingredient->id }}"
-                                    class="size-5 rounded border-neutral-300 text-brand-orange"
-                                >
-                                {{ $ingredient->emoji }} {{ $ingredient->name }}
-                            </label>
-                        @endforeach
-                        @if ($ingredientsDisponibles->isEmpty())
-                            <p class="text-sm text-neutral-400">Aucun ingrédient trouvé.</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <button
-                        type="submit"
-                        wire:loading.attr="disabled"
-                        class="cursor-pointer bg-brand-orange text-white rounded-full px-4 py-2 text-sm font-medium"
-                    >
-                        Enregistrer
-                    </button>
                     <button
                         type="button"
-                        wire:click="annulerPlat"
-                        class="cursor-pointer bg-neutral-100 text-neutral-600 rounded-full px-4 py-2 text-sm font-medium"
+                        wire:click="nouveauPlat"
+                        class="cursor-pointer shrink-0 bg-brand-orange text-white rounded-full px-4 py-2 text-sm font-medium"
                     >
-                        Annuler
+                        + Nouvelle
                     </button>
                 </div>
-            </form>
-        @endif
 
-        <div class="space-y-2">
-            @foreach ($plats as $plat)
-                <div wire:key="plat-{{ $plat->id }}" class="bg-white rounded-xl shadow-sm p-4">
-                    <div class="flex items-start justify-between gap-2">
+                <div class="space-y-2">
+                    @foreach ($plats as $plat)
+                        <div wire:key="plat-{{ $plat->id }}" class="flex items-stretch gap-1">
+                            <button
+                                type="button"
+                                wire:click="selectionnerPlat({{ $plat->id }})"
+                                class="cursor-pointer flex-1 text-left bg-white rounded-xl shadow-sm p-3 {{ $platSelectionneId === $plat->id ? 'ring-2 ring-brand-orange' : '' }}"
+                            >
+                                <p class="font-semibold text-brand-brick text-sm">{{ $plat->emoji }} {{ $plat->name }}</p>
+                                <p class="text-xs text-neutral-400 mt-0.5">{{ $plat->ingredients->count() }} ingrédient(s)</p>
+                            </button>
+                            <button
+                                type="button"
+                                wire:click.stop="supprimerPlat({{ $plat->id }})"
+                                wire:confirm="Supprimer « {{ $plat->name }} » ?"
+                                class="cursor-pointer shrink-0 text-xs font-medium text-brand-red hover:underline px-2"
+                            >
+                                Suppr.
+                            </button>
+                        </div>
+                    @endforeach
+                    @if ($plats->isEmpty())
+                        <p class="text-sm text-neutral-400">Aucune recette.</p>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Colonne de droite : detail / edition de la recette selectionnee --}}
+            <div class="{{ (!$platSelectionneId && !$formulairePlatOuvert) ? 'hidden md:block' : '' }} space-y-3">
+                @if ($formulairePlatOuvert)
+                    <button type="button" wire:click="fermerDetailPlat" class="cursor-pointer md:hidden text-sm font-medium text-neutral-500 hover:underline">
+                        ← Retour
+                    </button>
+
+                    <form wire:submit.prevent="enregistrerPlat" class="bg-white rounded-xl shadow-sm p-4 space-y-3">
                         <div>
-                            <p class="font-semibold text-brand-brick">{{ $plat->emoji }} {{ $plat->name }}</p>
-                            <ul class="list-disc list-inside text-xs text-neutral-500 mt-1">
-                                @foreach ($plat->ingredients as $ingredient)
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Nom</label>
+                            <input type="text" wire:model="platNom" class="w-full rounded-lg border-neutral-200 text-sm">
+                            @error('platNom') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Type</label>
+                            <select wire:model="platType" class="w-full rounded-lg border-neutral-200 text-sm">
+                                <option value="">—</option>
+                                @foreach ($typesDisponibles as $type => $emoji)
+                                    <option value="{{ $type }}">{{ $emoji }} {{ $type }}</option>
+                                @endforeach
+                            </select>
+                            @error('platType') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <label class="flex items-center gap-2 text-sm text-neutral-600">
+                            <input type="checkbox" wire:model="platLowCarb" class="size-5 rounded border-neutral-300 text-brand-orange">
+                            Low carb
+                        </label>
+
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Suggestion de dessert</label>
+                            <input type="text" wire:model="platDessertSuggestion" class="w-full rounded-lg border-neutral-200 text-sm">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-medium text-neutral-500">Recette (Markdown)</label>
+                                <button type="button" wire:click="$toggle('notesApercu')" class="cursor-pointer text-xs font-medium text-brand-orange hover:underline">
+                                    {{ $notesApercu ? 'Éditer' : 'Aperçu' }}
+                                </button>
+                            </div>
+                            @if ($notesApercu)
+                                <div class="{{ $proseRecette }} rounded-lg border border-neutral-200 p-3 min-h-32">
+                                    @if ($platNotes)
+                                        {!! \Illuminate\Support\Str::markdown($platNotes) !!}
+                                    @else
+                                        <p class="text-neutral-400">Rien à prévisualiser.</p>
+                                    @endif
+                                </div>
+                            @else
+                                <textarea wire:model="platNotes" rows="8" placeholder="# Étapes&#10;1. …&#10;2. …" class="w-full rounded-lg border-neutral-200 text-sm font-mono"></textarea>
+                            @endif
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Ingrédients</label>
+                            <input
+                                type="text"
+                                wire:model.live.debounce.300ms="rechercheIngredientDuPlat"
+                                placeholder="Filtrer les ingrédients…"
+                                class="w-full rounded-lg border-neutral-200 text-sm mb-2"
+                            >
+                            <div class="max-h-48 overflow-y-auto space-y-1 border border-neutral-100 rounded-lg p-2">
+                                @foreach ($ingredientsDisponibles as $ingredient)
+                                    <label class="flex items-center gap-2 text-sm py-0.5">
+                                        <input
+                                            type="checkbox"
+                                            wire:model="platIngredientIds"
+                                            value="{{ $ingredient->id }}"
+                                            class="size-5 rounded border-neutral-300 text-brand-orange"
+                                        >
+                                        {{ $ingredient->emoji }} {{ $ingredient->name }}
+                                    </label>
+                                @endforeach
+                                @if ($ingredientsDisponibles->isEmpty())
+                                    <p class="text-sm text-neutral-400">Aucun ingrédient trouvé.</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-1">
+                            <button
+                                type="submit"
+                                wire:loading.attr="disabled"
+                                class="cursor-pointer bg-brand-orange text-white rounded-full px-4 py-2 text-sm font-medium"
+                            >
+                                Enregistrer
+                            </button>
+                            <button
+                                type="button"
+                                wire:click="annulerPlat"
+                                class="cursor-pointer bg-neutral-100 text-neutral-600 rounded-full px-4 py-2 text-sm font-medium"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                @elseif ($platSelectionne)
+                    <button type="button" wire:click="fermerDetailPlat" class="cursor-pointer md:hidden text-sm font-medium text-neutral-500 hover:underline">
+                        ← Retour
+                    </button>
+
+                    <div class="bg-white rounded-xl shadow-sm p-4 space-y-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <p class="font-semibold text-brand-brick text-lg">{{ $platSelectionne->emoji }} {{ $platSelectionne->name }}</p>
+                                <p class="text-xs text-neutral-400 mt-0.5">
+                                    {{ $platSelectionne->type ?? '—' }}
+                                    @if ($platSelectionne->low_carb) · Low carb @endif
+                                </p>
+                            </div>
+                            <button type="button" wire:click="editerPlat({{ $platSelectionne->id }})" class="cursor-pointer shrink-0 text-xs font-medium text-brand-orange hover:underline">
+                                Modifier
+                            </button>
+                        </div>
+
+                        @if ($platSelectionne->dessert_suggestion)
+                            <p class="text-sm text-neutral-500">🍰 {{ $platSelectionne->dessert_suggestion }}</p>
+                        @endif
+
+                        <div>
+                            <p class="text-xs font-medium text-neutral-500 mb-1">Ingrédients</p>
+                            <ul class="list-disc list-inside text-sm text-neutral-600">
+                                @foreach ($platSelectionne->ingredients as $ingredient)
                                     <li>{{ $ingredient->name }}</li>
                                 @endforeach
-                                @if ($plat->ingredients->isEmpty())
+                                @if ($platSelectionne->ingredients->isEmpty())
                                     <li class="list-none text-neutral-400">Aucun ingrédient</li>
                                 @endif
                             </ul>
                         </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button type="button" wire:click="editerPlat({{ $plat->id }})" class="cursor-pointer text-xs font-medium text-brand-orange hover:underline">
-                                Modifier
-                            </button>
-                            <button
-                                type="button"
-                                wire:click="supprimerPlat({{ $plat->id }})"
-                                wire:confirm="Supprimer « {{ $plat->name }} » ?"
-                                class="cursor-pointer text-xs font-medium text-brand-red hover:underline"
-                            >
-                                Supprimer
-                            </button>
+
+                        <div>
+                            <p class="text-xs font-medium text-neutral-500 mb-1">Recette</p>
+                            @if ($platSelectionne->notes)
+                                <div class="{{ $proseRecette }}">
+                                    {!! \Illuminate\Support\Str::markdown($platSelectionne->notes) !!}
+                                </div>
+                            @else
+                                <p class="text-sm text-neutral-400">Aucune recette renseignée.</p>
+                            @endif
                         </div>
                     </div>
-                </div>
-            @endforeach
-            @if ($plats->isEmpty())
-                <p class="text-sm text-neutral-400">Aucune recette.</p>
-            @endif
+                @else
+                    <div class="hidden md:flex items-center justify-center h-40 text-sm text-neutral-400">
+                        Sélectionne une recette pour l'afficher.
+                    </div>
+                @endif
+            </div>
         </div>
     @else
         <div class="flex gap-2">

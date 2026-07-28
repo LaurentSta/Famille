@@ -23,6 +23,8 @@ class GestionCuisine extends Component
     public ?string $platNotes = null;
     public array $platIngredientIds = [];
     public string $rechercheIngredientDuPlat = '';
+    public ?int $platSelectionneId = null;
+    public bool $notesApercu = false;
 
     // --- Ingredients ---
     public string $rechercheIngredient = '';
@@ -38,14 +40,29 @@ class GestionCuisine extends Component
         $this->onglet = $onglet;
         $this->annulerPlat();
         $this->annulerIngredient();
+        $this->platSelectionneId = null;
     }
 
     // ---------- Plats ----------
+
+    public function selectionnerPlat(int $id): void
+    {
+        $this->platSelectionneId = $id;
+        $this->formulairePlatOuvert = false;
+        $this->notesApercu = false;
+    }
+
+    public function fermerDetailPlat(): void
+    {
+        $this->platSelectionneId = null;
+        $this->formulairePlatOuvert = false;
+    }
 
     public function nouveauPlat(): void
     {
         $this->resetValidation();
         $this->platEnEdition = null;
+        $this->platSelectionneId = null;
         $this->platNom = '';
         $this->platType = null;
         $this->platLowCarb = false;
@@ -53,6 +70,7 @@ class GestionCuisine extends Component
         $this->platNotes = null;
         $this->platIngredientIds = [];
         $this->rechercheIngredientDuPlat = '';
+        $this->notesApercu = false;
         $this->formulairePlatOuvert = true;
     }
 
@@ -62,6 +80,7 @@ class GestionCuisine extends Component
 
         $this->resetValidation();
         $this->platEnEdition = $plat->id;
+        $this->platSelectionneId = $plat->id;
         $this->platNom = $plat->name;
         $this->platType = $plat->type;
         $this->platLowCarb = (bool) $plat->low_carb;
@@ -69,6 +88,7 @@ class GestionCuisine extends Component
         $this->platNotes = $plat->notes;
         $this->platIngredientIds = $plat->ingredients->pluck('id')->all();
         $this->rechercheIngredientDuPlat = '';
+        $this->notesApercu = false;
         $this->formulairePlatOuvert = true;
     }
 
@@ -117,6 +137,7 @@ class GestionCuisine extends Component
         $plat->ingredients()->sync($data['platIngredientIds']);
 
         $this->messageSucces = "Plat « {$plat->name} » enregistré.";
+        $this->platSelectionneId = $plat->id;
         $this->annulerPlat();
     }
 
@@ -125,6 +146,10 @@ class GestionCuisine extends Component
         $plat = Plat::where('family_id', $this->familyId())->findOrFail($id);
         $nom = $plat->name;
         $plat->delete();
+
+        if ($this->platSelectionneId === $id) {
+            $this->fermerDetailPlat();
+        }
 
         $this->messageSucces = "Plat « {$nom} » supprimé.";
     }
@@ -226,8 +251,13 @@ class GestionCuisine extends Component
                 ->values();
         }
 
+        $platSelectionne = $this->platSelectionneId
+            ? Plat::where('family_id', $familyId)->with('ingredients')->find($this->platSelectionneId)
+            : null;
+
         return view('livewire.gestion-cuisine', [
             'plats' => $requetePlats->orderBy('name')->get(),
+            'platSelectionne' => $platSelectionne,
             'ingredients' => $requeteIngredients->withCount([
                 'plats as plats_famille_count' => fn ($q) => $q->where('dishes.family_id', $familyId),
             ])->get(),
