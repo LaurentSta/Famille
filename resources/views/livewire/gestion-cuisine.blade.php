@@ -1,4 +1,4 @@
-<div class="px-4 pt-6 pb-24 max-w-2xl w-full mx-auto space-y-4">
+<div class="px-4 lg:px-8 pt-6 pb-24 w-full space-y-4">
     <h1 class="text-lg font-semibold">Gestion</h1>
 
     @if ($messageSucces)
