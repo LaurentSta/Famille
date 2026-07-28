@@ -21,7 +21,7 @@ class PlanificateurRepas extends Component
 
     public string $filtre = 'all';
 
-    public bool $plusDeFiltresOuvert = false;
+    public bool $filtresOuverts = false;
     public ?string $filtreOrigine = null;
     public ?string $filtreRegime = null;
     public bool $filtreSansGluten = false;

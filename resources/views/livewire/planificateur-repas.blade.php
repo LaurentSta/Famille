@@ -31,36 +31,36 @@
 
             <div class="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-brand-orange to-brand-red rounded-xl shadow-lg p-1 sticky top-4 z-10 max-h-[80vh]">
                 <div class="flex-1 flex flex-col min-h-0 bg-white rounded-lg p-2.5 sm:p-4">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="recherche"
-                        placeholder="Rechercher un plat…"
-                        class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
-                    >
-
-                    <div class="flex gap-1.5 mb-2">
-                        @foreach (['all' => 'Tous', 'plat' => 'Plats', 'dessert' => 'Desserts'] as $value => $label)
-                            <button
-                                type="button"
-                                wire:click="$set('filtre', '{{ $value }}')"
-                                class="cursor-pointer flex-1 text-xs font-medium rounded-full px-2 py-1.5 {{ $filtre === $value ? 'bg-brand-mustard text-white' : 'bg-neutral-100 text-neutral-500' }}"
-                            >
-                                {{ $label }}
-                            </button>
-                        @endforeach
-                    </div>
-
                     <button
                         type="button"
-                        wire:click="$toggle('plusDeFiltresOuvert')"
+                        wire:click="$toggle('filtresOuverts')"
                         class="cursor-pointer text-xs text-neutral-400 hover:text-neutral-600 mb-2 flex items-center gap-1"
                     >
-                        <span>Plus de filtres</span>
-                        <span>{{ $plusDeFiltresOuvert ? '▴' : '▾' }}</span>
+                        <span>Filtres</span>
+                        <span>{{ $filtresOuverts ? '▴' : '▾' }}</span>
                     </button>
 
-                    @if ($plusDeFiltresOuvert)
+                    @if ($filtresOuverts)
                         <div class="space-y-1.5 mb-3">
+                            <input
+                                type="text"
+                                wire:model.live.debounce.300ms="recherche"
+                                placeholder="Rechercher un plat…"
+                                class="w-full rounded-lg border-2 border-brand-orange/30 text-sm focus:border-brand-orange focus:ring-brand-orange"
+                            >
+
+                            <div class="flex gap-1.5">
+                                @foreach (['all' => 'Tous', 'plat' => 'Plats', 'dessert' => 'Desserts'] as $value => $label)
+                                    <button
+                                        type="button"
+                                        wire:click="$set('filtre', '{{ $value }}')"
+                                        class="cursor-pointer flex-1 text-xs font-medium rounded-full px-2 py-1.5 {{ $filtre === $value ? 'bg-brand-mustard text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                    >
+                                        {{ $label }}
+                                    </button>
+                                @endforeach
+                            </div>
+
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($originesDisponibles as $origine => $emoji)
                                     <button
