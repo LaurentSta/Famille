@@ -9,12 +9,21 @@
     @else
         <div class="px-4 pt-6 pb-40 max-w-2xl w-full mx-auto space-y-4">
             @if (empty($messages))
-                <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-brand-orange">
-                    <h1 class="text-lg font-semibold mb-1">Assistant cuisine</h1>
-                    <p class="text-sm text-neutral-500">
-                        Demande-moi une idée de plat, une recette, ou parle-moi d'un ingrédient — je peux ajouter
-                        directement un plat à ta banque si tu le souhaites.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-brand-orange space-y-2">
+                    <h1 class="text-lg font-semibold">Assistant cuisine</h1>
+                    <p class="text-sm text-neutral-500">Je peux t'aider de deux façons :</p>
+                    <ul class="text-sm text-neutral-500 space-y-1.5 list-disc list-inside">
+                        <li>
+                            <span class="font-medium text-neutral-700">Recettes</span> — décris un plat ou demande-moi une idée
+                            (« une recette de gratin », « je ne sais pas quoi faire ce soir »…) : je te propose une recette
+                            complète que tu peux ajouter en un clic à ta banque de recettes.
+                        </li>
+                        <li>
+                            <span class="font-medium text-neutral-700">Ingrédients</span> — les ingrédients d'une recette que
+                            tu ajoutes sont automatiquement créés dans ton catalogue (avec leur catégorie) s'ils n'existent
+                            pas déjà.
+                        </li>
+                    </ul>
                 </div>
             @endif
 
