@@ -22,10 +22,13 @@ Réponds de façon concise (quelques phrases).
 Quand tu proposes un plat complet et clairement défini (nom + liste d'ingrédients), termine ta réponse par un bloc au format suivant, et rien d'autre après ce bloc :
 
 ```dish
-{"name": "Nom du plat", "type": "Viande", "ingredients": [{"name": "tomates", "category": "Fruits & légumes"}]}
+{"name": "Nom du plat", "type": "Viande", "cuisine_origin": null, "regime": null, "gluten_free": false, "ingredients": [{"name": "tomates", "category": "Fruits & légumes"}]}
 ```
 
 Valeurs possibles pour "type" : Œufs, Viande, Poisson, Légumes, Salade, Plat complet, Pâtes, Dessert.
+Valeurs possibles pour "cuisine_origin" (facultatif, mets null si aucune ne correspond clairement) : Européen, Méditerranéen, Maghrébin / Oriental, Indien, Asiatique, Mexicain.
+Valeurs possibles pour "regime" (facultatif, mets null si non applicable) : Végétarien, Vegan, Flexitarien.
+"gluten_free" : true uniquement si tu es certain que la recette ne contient aucun ingrédient à base de blé/gluten, sinon false.
 Valeurs possibles pour "category" (par ingrédient) : Frais (laitages, œufs, fromage), Fruits & légumes, Viande & poisson, Épicerie (sec, conserves, pain).
 
 N'inclus ce bloc que lorsque le plat est clairement défini. Pour une simple discussion ou suggestion ouverte, ne l'inclus pas.
@@ -169,6 +172,9 @@ PROMPT;
             'family_id' => auth()->user()->family_id,
             'name' => $dishData['name'],
             'type' => $this->normalizeType($dishData['type'] ?? null),
+            'cuisine_origin' => $this->normalizeCuisineOrigin($dishData['cuisine_origin'] ?? null),
+            'regime' => $this->normalizeRegime($dishData['regime'] ?? null),
+            'gluten_free' => (bool) ($dishData['gluten_free'] ?? false),
         ]);
 
         $ingredientIds = collect($dishData['ingredients'])
@@ -255,6 +261,46 @@ PROMPT;
         Log::warning('assistant_cuisine.type_hors_liste', [
             'family_id' => auth()->user()->family_id,
             'type_recu' => $type,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Meme logique que normalizeType : on stocke null plutot qu'une valeur
+     * hors liste, pour ne pas casser les filtres du planning.
+     */
+    private function normalizeCuisineOrigin(?string $origin): ?string
+    {
+        if (blank($origin)) {
+            return null;
+        }
+
+        if (array_key_exists($origin, config('emoji.dish_origins'))) {
+            return $origin;
+        }
+
+        Log::warning('assistant_cuisine.origine_hors_liste', [
+            'family_id' => auth()->user()->family_id,
+            'origine_recue' => $origin,
+        ]);
+
+        return null;
+    }
+
+    private function normalizeRegime(?string $regime): ?string
+    {
+        if (blank($regime)) {
+            return null;
+        }
+
+        if (array_key_exists($regime, config('emoji.dish_regimes'))) {
+            return $regime;
+        }
+
+        Log::warning('assistant_cuisine.regime_hors_liste', [
+            'family_id' => auth()->user()->family_id,
+            'regime_recu' => $regime,
         ]);
 
         return null;

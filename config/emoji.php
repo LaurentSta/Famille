@@ -20,6 +20,21 @@ return [
 
     'dish_type_default' => '🍴',
 
+    'dish_origins' => [
+        'Européen' => '🥖',
+        'Méditerranéen' => '🫒',
+        'Maghrébin / Oriental' => '🫓',
+        'Indien' => '🍛',
+        'Asiatique' => '🥢',
+        'Mexicain' => '🌮',
+    ],
+
+    'dish_regimes' => [
+        'Végétarien' => '🥕',
+        'Vegan' => '🌱',
+        'Flexitarien' => '⚖️',
+    ],
+
     'ingredients' => [
         'béchamel' => '🥣',
         'choucroute' => '🥬',

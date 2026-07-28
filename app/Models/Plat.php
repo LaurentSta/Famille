@@ -13,13 +13,17 @@ class Plat extends Model
         'family_id',
         'name',
         'type',
+        'cuisine_origin',
         'low_carb',
+        'regime',
+        'gluten_free',
         'dessert_suggestion',
         'notes',
     ];
 
     protected $casts = [
         'low_carb' => 'boolean',
+        'gluten_free' => 'boolean',
     ];
 
     public function famille(): BelongsTo
@@ -35,5 +39,15 @@ class Plat extends Model
     public function getEmojiAttribute(): string
     {
         return config("emoji.dish_types.{$this->type}", config('emoji.dish_type_default'));
+    }
+
+    public function getOriginEmojiAttribute(): ?string
+    {
+        return config("emoji.dish_origins.{$this->cuisine_origin}");
+    }
+
+    public function getRegimeEmojiAttribute(): ?string
+    {
+        return config("emoji.dish_regimes.{$this->regime}");
     }
 }

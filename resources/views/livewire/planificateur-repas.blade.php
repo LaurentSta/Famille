@@ -38,7 +38,7 @@
                         class="w-full rounded-lg border-2 border-brand-orange/30 text-sm mb-3 focus:border-brand-orange focus:ring-brand-orange"
                     >
 
-                    <div class="flex gap-1.5 mb-3">
+                    <div class="flex gap-1.5 mb-2">
                         @foreach (['all' => 'Tous', 'plat' => 'Plats', 'dessert' => 'Desserts'] as $value => $label)
                             <button
                                 type="button"
@@ -49,6 +49,58 @@
                             </button>
                         @endforeach
                     </div>
+
+                    <button
+                        type="button"
+                        wire:click="$toggle('plusDeFiltresOuvert')"
+                        class="cursor-pointer text-xs text-neutral-400 hover:text-neutral-600 mb-2 flex items-center gap-1"
+                    >
+                        <span>Plus de filtres</span>
+                        <span>{{ $plusDeFiltresOuvert ? '▴' : '▾' }}</span>
+                    </button>
+
+                    @if ($plusDeFiltresOuvert)
+                        <div class="space-y-1.5 mb-3">
+                            <div class="flex flex-wrap gap-1">
+                                @foreach ($originesDisponibles as $origine => $emoji)
+                                    <button
+                                        type="button"
+                                        wire:click="filtrerParOrigine('{{ $origine }}')"
+                                        class="cursor-pointer text-[11px] font-medium rounded-full px-2 py-1 {{ $filtreOrigine === $origine ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                    >
+                                        {{ $emoji }} {{ $origine }}
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                @foreach ($regimesDisponibles as $regime => $emoji)
+                                    <button
+                                        type="button"
+                                        wire:click="filtrerParRegime('{{ $regime }}')"
+                                        class="cursor-pointer text-[11px] font-medium rounded-full px-2 py-1 {{ $filtreRegime === $regime ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                    >
+                                        {{ $emoji }} {{ $regime }}
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <button
+                                    type="button"
+                                    wire:click="$toggle('filtreSansGluten')"
+                                    class="cursor-pointer text-[11px] font-medium rounded-full px-2 py-1 {{ $filtreSansGluten ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                >
+                                    Sans gluten
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="$toggle('filtreLowCarb')"
+                                    class="cursor-pointer text-[11px] font-medium rounded-full px-2 py-1 {{ $filtreLowCarb ? 'bg-brand-orange text-white' : 'bg-neutral-100 text-neutral-500' }}"
+                                >
+                                    Low carb
+                                </button>
+                            </div>
+                        </div>
+                    @endif
 
                     <ul class="flex-1 min-h-0 space-y-1 overflow-y-auto">
                         @foreach ($plats as $plat)

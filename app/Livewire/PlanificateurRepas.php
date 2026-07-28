@@ -21,6 +21,22 @@ class PlanificateurRepas extends Component
 
     public string $filtre = 'all';
 
+    public bool $plusDeFiltresOuvert = false;
+    public ?string $filtreOrigine = null;
+    public ?string $filtreRegime = null;
+    public bool $filtreSansGluten = false;
+    public bool $filtreLowCarb = false;
+
+    public function filtrerParOrigine(string $origine): void
+    {
+        $this->filtreOrigine = $this->filtreOrigine === $origine ? null : $origine;
+    }
+
+    public function filtrerParRegime(string $regime): void
+    {
+        $this->filtreRegime = $this->filtreRegime === $regime ? null : $regime;
+    }
+
     public function mount(): void
     {
         $this->semaine ??= Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
@@ -127,6 +143,22 @@ class PlanificateurRepas extends Component
             $requetePlats->where('name', 'like', '%'.$this->recherche.'%');
         }
 
+        if ($this->filtreOrigine) {
+            $requetePlats->where('cuisine_origin', $this->filtreOrigine);
+        }
+
+        if ($this->filtreRegime) {
+            $requetePlats->where('regime', $this->filtreRegime);
+        }
+
+        if ($this->filtreSansGluten) {
+            $requetePlats->where('gluten_free', true);
+        }
+
+        if ($this->filtreLowCarb) {
+            $requetePlats->where('low_carb', true);
+        }
+
         $debutMois = $this->debutMois();
         $finMois = $debutMois->copy()->endOfMonth();
         $debutSemaines = collect();
@@ -152,6 +184,8 @@ class PlanificateurRepas extends Component
             'jours' => $jours,
             'repasPlanifies' => $repasPlanifies,
             'plats' => $requetePlats->with('ingredients')->orderBy('name')->get(),
+            'originesDisponibles' => config('emoji.dish_origins'),
+            'regimesDisponibles' => config('emoji.dish_regimes'),
             'debutSemaine' => $debut,
             'debutMois' => $debutMois,
             'ongletsSemaines' => $ongletsSemaines,

@@ -156,6 +156,27 @@ class GestionCuisineTest extends TestCase
             ->assertSet('platSelectionneId', null);
     }
 
+    public function test_creation_d_un_plat_avec_origine_regime_et_sans_gluten(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+
+        Livewire::actingAs($user)
+            ->test(GestionCuisine::class)
+            ->call('nouveauPlat')
+            ->set('platNom', 'Curry de légumes')
+            ->set('platCuisineOrigin', 'Indien')
+            ->set('platRegime', 'Végétarien')
+            ->set('platGlutenFree', true)
+            ->call('enregistrerPlat');
+
+        $this->assertDatabaseHas('dishes', [
+            'name' => 'Curry de légumes',
+            'cuisine_origin' => 'Indien',
+            'regime' => 'Végétarien',
+            'gluten_free' => 1,
+        ]);
+    }
+
     public function test_validation_stricte_du_type_de_plat_et_de_la_categorie_d_ingredient(): void
     {
         $user = $this->utilisateurAvecFamille();

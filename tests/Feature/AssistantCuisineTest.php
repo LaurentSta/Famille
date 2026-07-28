@@ -70,6 +70,60 @@ class AssistantCuisineTest extends TestCase
         $this->assertTrue(Plat::where('name', 'Poulet basquaise')->first()->ingredients->contains('name', 'poulet'));
     }
 
+    public function test_addDish_reprend_l_origine_le_regime_et_le_sans_gluten_proposes_par_l_ia(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+
+        MessageIa::create([
+            'family_id' => $user->family_id,
+            'role' => 'assistant',
+            'content' => 'Voici une idée !',
+            'dish' => [
+                'name' => 'Curry de légumes',
+                'type' => 'Légumes',
+                'cuisine_origin' => 'Indien',
+                'regime' => 'Végétarien',
+                'gluten_free' => true,
+                'ingredients' => [['name' => 'curry', 'category' => 'Épicerie (sec, conserves, pain)']],
+            ],
+            'added' => false,
+        ]);
+
+        Livewire::actingAs($user)->test(AssistantCuisine::class)->call('addDish', 0);
+
+        $this->assertDatabaseHas('dishes', [
+            'name' => 'Curry de légumes',
+            'cuisine_origin' => 'Indien',
+            'regime' => 'Végétarien',
+            'gluten_free' => 1,
+        ]);
+    }
+
+    public function test_une_origine_et_un_regime_hors_liste_canonique_sont_neutralises(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+
+        MessageIa::create([
+            'family_id' => $user->family_id,
+            'role' => 'assistant',
+            'content' => 'Voici une idée !',
+            'dish' => [
+                'name' => 'Truc bizarre 2',
+                'type' => 'Légumes',
+                'cuisine_origin' => 'OrigineInventee',
+                'regime' => 'RegimeInvente',
+                'ingredients' => [['name' => 'mystere2', 'category' => 'Fruits & légumes']],
+            ],
+            'added' => false,
+        ]);
+
+        Livewire::actingAs($user)->test(AssistantCuisine::class)->call('addDish', 0);
+
+        $plat = Plat::where('name', 'Truc bizarre 2')->first();
+        $this->assertNull($plat->cuisine_origin);
+        $this->assertNull($plat->regime);
+    }
+
     public function test_un_type_et_une_categorie_hors_liste_canonique_sont_neutralises(): void
     {
         $user = $this->utilisateurAvecFamille();

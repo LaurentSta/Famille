@@ -74,4 +74,48 @@ class PlanificateurRepasTest extends TestCase
             'included' => false,
         ]);
     }
+
+    public function test_le_filtre_origine_ne_montre_que_les_plats_de_cette_origine(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Curry', 'cuisine_origin' => 'Indien']);
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Blanquette', 'cuisine_origin' => 'Européen']);
+
+        Livewire::actingAs($user)
+            ->test(PlanificateurRepas::class)
+            ->call('filtrerParOrigine', 'Indien')
+            ->assertSee('Curry')
+            ->assertDontSee('Blanquette');
+    }
+
+    public function test_recliquer_sur_la_meme_origine_desactive_le_filtre(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Curry', 'cuisine_origin' => 'Indien']);
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Blanquette', 'cuisine_origin' => 'Européen']);
+
+        Livewire::actingAs($user)
+            ->test(PlanificateurRepas::class)
+            ->call('filtrerParOrigine', 'Indien')
+            ->call('filtrerParOrigine', 'Indien')
+            ->assertSet('filtreOrigine', null)
+            ->assertSee('Curry')
+            ->assertSee('Blanquette');
+    }
+
+    public function test_le_filtre_regime_et_sans_gluten_se_combinent(): void
+    {
+        $user = $this->utilisateurAvecFamille();
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Salade vegan sans gluten', 'regime' => 'Vegan', 'gluten_free' => true]);
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Salade vegan avec gluten', 'regime' => 'Vegan', 'gluten_free' => false]);
+        Plat::create(['family_id' => $user->family_id, 'name' => 'Poulet', 'regime' => null]);
+
+        Livewire::actingAs($user)
+            ->test(PlanificateurRepas::class)
+            ->call('filtrerParRegime', 'Vegan')
+            ->set('filtreSansGluten', true)
+            ->assertSee('Salade vegan sans gluten')
+            ->assertDontSee('Salade vegan avec gluten')
+            ->assertDontSee('Poulet');
+    }
 }

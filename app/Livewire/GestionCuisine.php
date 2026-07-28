@@ -18,7 +18,10 @@ class GestionCuisine extends Component
     public ?int $platEnEdition = null;
     public string $platNom = '';
     public ?string $platType = null;
+    public ?string $platCuisineOrigin = null;
     public bool $platLowCarb = false;
+    public ?string $platRegime = null;
+    public bool $platGlutenFree = false;
     public ?string $platDessertSuggestion = null;
     public ?string $platNotes = null;
     public array $platIngredientIds = [];
@@ -65,7 +68,10 @@ class GestionCuisine extends Component
         $this->platSelectionneId = null;
         $this->platNom = '';
         $this->platType = null;
+        $this->platCuisineOrigin = null;
         $this->platLowCarb = false;
+        $this->platRegime = null;
+        $this->platGlutenFree = false;
         $this->platDessertSuggestion = null;
         $this->platNotes = null;
         $this->platIngredientIds = [];
@@ -83,7 +89,10 @@ class GestionCuisine extends Component
         $this->platSelectionneId = $plat->id;
         $this->platNom = $plat->name;
         $this->platType = $plat->type;
+        $this->platCuisineOrigin = $plat->cuisine_origin;
         $this->platLowCarb = (bool) $plat->low_carb;
+        $this->platRegime = $plat->regime;
+        $this->platGlutenFree = (bool) $plat->gluten_free;
         $this->platDessertSuggestion = $plat->dessert_suggestion;
         $this->platNotes = $plat->notes;
         $this->platIngredientIds = $plat->ingredients->pluck('id')->all();
@@ -103,7 +112,10 @@ class GestionCuisine extends Component
         $data = $this->validate([
             'platNom' => ['required', 'string', 'max:255'],
             'platType' => ['nullable', Rule::in(array_keys(config('emoji.dish_types')))],
+            'platCuisineOrigin' => ['nullable', Rule::in(array_keys(config('emoji.dish_origins')))],
             'platLowCarb' => ['boolean'],
+            'platRegime' => ['nullable', Rule::in(array_keys(config('emoji.dish_regimes')))],
+            'platGlutenFree' => ['boolean'],
             'platDessertSuggestion' => ['nullable', 'string', 'max:255'],
             'platNotes' => ['nullable', 'string'],
             'platIngredientIds' => ['array'],
@@ -117,7 +129,10 @@ class GestionCuisine extends Component
             $plat->update([
                 'name' => $data['platNom'],
                 'type' => $data['platType'],
+                'cuisine_origin' => $data['platCuisineOrigin'],
                 'low_carb' => $data['platLowCarb'],
+                'regime' => $data['platRegime'],
+                'gluten_free' => $data['platGlutenFree'],
                 'dessert_suggestion' => $data['platDessertSuggestion'],
                 'notes' => $data['platNotes'],
             ]);
@@ -126,7 +141,10 @@ class GestionCuisine extends Component
                 'family_id' => $familyId,
                 'name' => $data['platNom'],
                 'type' => $data['platType'],
+                'cuisine_origin' => $data['platCuisineOrigin'],
                 'low_carb' => $data['platLowCarb'],
+                'regime' => $data['platRegime'],
+                'gluten_free' => $data['platGlutenFree'],
                 'dessert_suggestion' => $data['platDessertSuggestion'],
                 'notes' => $data['platNotes'],
             ]);
@@ -263,6 +281,8 @@ class GestionCuisine extends Component
             ])->get(),
             'ingredientsDisponibles' => $ingredientsDisponibles,
             'typesDisponibles' => config('emoji.dish_types'),
+            'originesDisponibles' => config('emoji.dish_origins'),
+            'regimesDisponibles' => config('emoji.dish_regimes'),
             'categoriesDisponibles' => config('emoji.ingredient_category_default'),
         ])->layout('layouts.app');
     }

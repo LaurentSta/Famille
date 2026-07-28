@@ -104,10 +104,38 @@
                             @error('platType') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <label class="flex items-center gap-2 text-sm text-neutral-600">
-                            <input type="checkbox" wire:model="platLowCarb" class="size-5 rounded border-neutral-300 text-brand-orange">
-                            Low carb
-                        </label>
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Origine / cuisine</label>
+                            <select wire:model="platCuisineOrigin" class="w-full rounded-lg border-neutral-200 text-sm">
+                                <option value="">—</option>
+                                @foreach ($originesDisponibles as $origine => $emoji)
+                                    <option value="{{ $origine }}">{{ $emoji }} {{ $origine }}</option>
+                                @endforeach
+                            </select>
+                            @error('platCuisineOrigin') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-500 mb-1">Régime</label>
+                            <select wire:model="platRegime" class="w-full rounded-lg border-neutral-200 text-sm">
+                                <option value="">—</option>
+                                @foreach ($regimesDisponibles as $regime => $emoji)
+                                    <option value="{{ $regime }}">{{ $emoji }} {{ $regime }}</option>
+                                @endforeach
+                            </select>
+                            @error('platRegime') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 text-sm text-neutral-600">
+                                <input type="checkbox" wire:model="platLowCarb" class="size-5 rounded border-neutral-300 text-brand-orange">
+                                Low carb
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-neutral-600">
+                                <input type="checkbox" wire:model="platGlutenFree" class="size-5 rounded border-neutral-300 text-brand-orange">
+                                Sans gluten
+                            </label>
+                        </div>
 
                         <div>
                             <label class="block text-xs font-medium text-neutral-500 mb-1">Suggestion de dessert</label>
@@ -188,7 +216,10 @@
                                 <p class="font-semibold text-brand-brick text-lg">{{ $platSelectionne->emoji }} {{ $platSelectionne->name }}</p>
                                 <p class="text-xs text-neutral-400 mt-0.5">
                                     {{ $platSelectionne->type ?? '—' }}
+                                    @if ($platSelectionne->cuisine_origin) · {{ $platSelectionne->origin_emoji }} {{ $platSelectionne->cuisine_origin }} @endif
+                                    @if ($platSelectionne->regime) · {{ $platSelectionne->regime_emoji }} {{ $platSelectionne->regime }} @endif
                                     @if ($platSelectionne->low_carb) · Low carb @endif
+                                    @if ($platSelectionne->gluten_free) · Sans gluten @endif
                                 </p>
                             </div>
                             <button type="button" wire:click="editerPlat({{ $platSelectionne->id }})" class="cursor-pointer shrink-0 text-xs font-medium text-brand-orange hover:underline">
